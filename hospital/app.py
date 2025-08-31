@@ -111,28 +111,59 @@ class MedicalRecord(db.Model):
 
 # Initialize database
 with app.app_context():
-    db.create_all()
+    # Use instance folder for database (Flask default behavior)
+    instance_db_path = os.path.join(app.instance_path, 'hospital.db')
+    print(f"[v0] Database file path: {instance_db_path}")
+    print(f"[v0] Database file exists: {os.path.exists(instance_db_path)}")
     
-    # Create default admin user if not exists
-    admin = User.query.filter_by(username='admin').first()
-    if not admin:
-        admin = User(
-            username='admin',
-            password_hash=generate_password_hash('admin123'),
-            first_name='System',
-            last_name='Administrator',
-            role='admin'
-        )
-        db.session.add(admin)
+    # Ensure instance directory exists
+    os.makedirs(app.instance_path, exist_ok=True)
     
-    # Create default specializations
-    specializations = ['General Medicine', 'Cardiology', 'Neurology', 'Orthopedics', 'Pediatrics', 'Dermatology']
-    for spec_name in specializations:
-        if not Specialization.query.filter_by(name=spec_name).first():
-            spec = Specialization(name=spec_name)
-            db.session.add(spec)
-    
-    db.session.commit()
+    try:
+        # Only create tables, don't recreate if they exist
+        db.create_all()
+        print("[v0] Database tables checked/created successfully")
+        
+        # Check if database is empty (first run)
+        user_count = User.query.count()
+        is_first_run = user_count == 0
+        
+        if is_first_run:
+            print("[v0] First run detected - creating default data")
+            
+            # Create default admin user
+            admin = User(
+                username='admin',
+                password_hash=generate_password_hash('admin123'),
+                first_name='System',
+                last_name='Administrator',
+                role='admin'
+            )
+            db.session.add(admin)
+            print("[v0] Created default admin user")
+            
+            # Create default specializations
+            specializations = ['General Medicine', 'Cardiology', 'Neurology', 'Orthopedics', 'Pediatrics', 'Dermatology']
+            for spec_name in specializations:
+                spec = Specialization(name=spec_name)
+                db.session.add(spec)
+                print(f"[v0] Created specialization: {spec_name}")
+            
+            db.session.commit()
+            print("[v0] Default data created successfully")
+        else:
+            print("[v0] Existing database found - preserving data")
+        
+        # Display current data counts
+        user_count = User.query.count()
+        patient_count = Patient.query.count()
+        doctor_count = Doctor.query.count()
+        appointment_count = Appointment.query.count()
+        print(f"[v0] Current data counts - Users: {user_count}, Patients: {patient_count}, Doctors: {doctor_count}, Appointments: {appointment_count}")
+        
+    except Exception as e:
+        print(f"[v0] Database initialization error: {str(e)}")
+        raise
 
 # Authentication routes
 @app.route('/')
@@ -362,7 +393,6 @@ def admin_dashboard():
                          today_appointments=today_appointments,
                          pending_requests=pending_requests,
                          total_records=total_records,
-                         recent_records=recent_records,
                          recent_activities=recent_activities)
 
 # Patient management routes
