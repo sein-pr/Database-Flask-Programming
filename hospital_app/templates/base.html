@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Hospital Management</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .header {
+            background-color: #fff;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header .logo {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: #007bff;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        .header .logo svg {
+            width: 40px;
+            height: 40px;
+            margin-right: 10px;
+            fill: #007bff;
+        }
+        .header nav ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+        }
+        .header nav ul li {
+            margin-left: 20px;
+        }
+        .header nav a, .header nav button {
+            text-decoration: none;
+            color: #333;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: background-color 0.3s;
+            font-weight: 500;
+            border: none;
+            background: none;
+            cursor: pointer;
+        }
+        .header nav a:hover, .header nav button:hover {
+            background-color: #e9ecef;
+        }
+        .header nav a.active {
+            background-color: #007bff;
+            color: #fff;
+        }
+        /* New style for admin links to match existing navigation */
+        .header .admin-nav-item a {
+            color: #4CAF50; /* A different color to distinguish admin links */
+        }
+        .header .admin-nav-item a:hover {
+            background-color: #e8f5e9;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <a href="{{ url_for('index') }}" class="logo">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm-1-8h2v5h-2V8zm0-2h2v1h-2V6z"/>
+            </svg>
+            Hospital App
+        </a>
+        <nav>
+            <ul>
+                {% if session.get('logged_in') %}
+                    <li><a href="{{ url_for('index') }}">Dashboard</a></li>
+                    <li><a href="{{ url_for('add_patient_form') }}">Add Patient</a></li>
+                    <li><a href="{{ url_for('add_appointment_form') }}">Book Appointment</a></li>
+                    
+                    <!-- New Admin Tabs -->
+                    {% if session.get('username') == 'Administrator' %}
+                        <li class="admin-nav-item"><a href="{{ url_for('give_access') }}">Give access</a></li>
+                        <li class="admin-nav-item"><a href="{{ url_for('see_access_requests') }}">See Access Requests</a></li>
+                        <li class="admin-nav-item"><a href="{{ url_for('list_users') }}">Manage Users</a></li>
+                    {% endif %}
+                    
+                    <li><a href="{{ url_for('logout') }}" class="button">Logout</a></li>
+                {% else %}
+                    <li><a href="{{ url_for('login') }}" class="button">Login</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </header>
+    <div class="container">
+        {% if session.get('logged_in') %}
+            <h2 class="welcome-message">Welcome, {{ session.get('username') }}!</h2>
+        {% endif %}
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>

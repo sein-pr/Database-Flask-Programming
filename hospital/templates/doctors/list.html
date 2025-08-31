@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+
+{% block title %}Doctors - SEIN Hospital Management{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-title">
+        <h1><i class="fas fa-user-md"></i> Doctors</h1>
+        <p>Manage medical staff and specialists</p>
+    </div>
+    <div class="page-actions">
+        <a href="{{ url_for('add_doctor') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Add New Doctor
+        </a>
+    </div>
+</div>
+
+<div class="search-section">
+    <form method="GET" class="search-form">
+        <div class="search-filters">
+            <div class="search-input-group">
+                <input type="text" name="search" value="{{ search }}" 
+                       placeholder="Search doctors by name, phone, email, or license..." 
+                       class="form-control search-input">
+                <select name="specialization" class="form-control specialization-filter">
+                    <option value="">All Specializations</option>
+                    {% for spec in specializations %}
+                    <option value="{{ spec.id }}" {% if specialization_filter == spec.id|string %}selected{% endif %}>
+                        {{ spec.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-secondary">
+                    <i class="fas fa-search"></i> Search
+                </button>
+                {% if search or specialization_filter %}
+                <a href="{{ url_for('doctors') }}" class="btn btn-outline">
+                    <i class="fas fa-times"></i> Clear
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class="doctors-grid">
+    {% for doctor in doctors.items %}
+    <div class="doctor-card">
+        <div class="doctor-avatar">
+            <div class="avatar-circle doctor-avatar-bg">
+                {{ doctor.first_name[0] }}{{ doctor.last_name[0] }}
+            </div>
+        </div>
+        <div class="doctor-info">
+            <h3>Dr. {{ doctor.first_name }} {{ doctor.last_name }}</h3>
+            <div class="doctor-specialization">
+                <i class="fas fa-stethoscope"></i>
+                {{ doctor.specialization_ref.name }}
+            </div>
+            <div class="doctor-details">
+                {% if doctor.phone %}
+                <p><i class="fas fa-phone"></i> {{ doctor.phone }}</p>
+                {% endif %}
+                {% if doctor.email %}
+                <p><i class="fas fa-envelope"></i> {{ doctor.email }}</p>
+                {% endif %}
+                {% if doctor.license_number %}
+                <p><i class="fas fa-id-card"></i> License: {{ doctor.license_number }}</p>
+                {% endif %}
+            </div>
+            <div class="doctor-stats">
+                <span class="stat-badge">
+                    <i class="fas fa-calendar-check"></i>
+                    {{ doctor.appointments|length }} appointments
+                </span>
+            </div>
+        </div>
+        <div class="doctor-actions">
+            <a href="{{ url_for('doctor_detail', doctor_id=doctor.id) }}" 
+               class="btn btn-sm btn-primary">
+                <i class="fas fa-eye"></i> View
+            </a>
+            <a href="{{ url_for('edit_doctor', doctor_id=doctor.id) }}" 
+               class="btn btn-sm btn-secondary">
+                <i class="fas fa-edit"></i> Edit
+            </a>
+            <form method="POST" action="{{ url_for('delete_doctor', doctor_id=doctor.id) }}" 
+                  style="display: inline;" 
+                  onsubmit="return confirm('Are you sure you want to delete this doctor? This action cannot be undone if the doctor has no appointments.')">
+                <button type="submit" class="btn btn-sm btn-danger">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
+            </form>
+        </div>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-user-md"></i>
+        <h3>No doctors found</h3>
+        <p>{% if search or specialization_filter %}No doctors match your search criteria.{% else %}Start by adding your first doctor.{% endif %}</p>
+        {% if not search and not specialization_filter %}
+        <a href="{{ url_for('add_doctor') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Add First Doctor
+        </a>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+
+{% if doctors.pages > 1 %}
+<div class="pagination">
+    {% if doctors.has_prev %}
+    <a href="{{ url_for('doctors', page=doctors.prev_num, search=search, specialization=specialization_filter) }}" class="btn btn-outline">
+        <i class="fas fa-chevron-left"></i> Previous
+    </a>
+    {% endif %}
+    
+    <span class="pagination-info">
+        Page {{ doctors.page }} of {{ doctors.pages }} 
+        ({{ doctors.total }} total doctors)
+    </span>
+    
+    {% if doctors.has_next %}
+    <a href="{{ url_for('doctors', page=doctors.next_num, search=search, specialization=specialization_filter) }}" class="btn btn-outline">
+        Next <i class="fas fa-chevron-right"></i>
+    </a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<style>
+.search-filters {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.search-input-group {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.search-input {
+    flex: 2;
+    min-width: 250px;
+}
+
+.specialization-filter {
+    flex: 1;
+    min-width: 200px;
+}
+
+.doctors-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.doctor-card {
+    background: white;
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.doctor-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+}
+
+.doctor-avatar {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.doctor-avatar-bg {
+    background: linear-gradient(135deg, #2c5aa0, var(--accent-color));
+}
+
+.doctor-info h3 {
+    text-align: center;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+    font-size: 1.5rem;
+}
+
+.doctor-specialization {
+    text-align: center;
+    color: var(--accent-color);
+    font-weight: 600;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.doctor-details p {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-dark);
+    font-size: 0.9rem;
+}
+
+.doctor-details i {
+    color: var(--accent-color);
+    width: 16px;
+}
+
+.doctor-stats {
+    text-align: center;
+    margin: 1rem 0;
+}
+
+.doctor-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    margin-top: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .doctors-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .search-input-group {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .search-input,
+    .specialization-filter {
+        min-width: auto;
+    }
+}
+</style>
+{% endblock %}

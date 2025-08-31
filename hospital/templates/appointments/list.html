@@ -1,0 +1,336 @@
+{% extends "base.html" %}
+
+{% block title %}Appointments - SEIN Hospital Management{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-title">
+        <h1><i class="fas fa-calendar-alt"></i> Appointments</h1>
+        <p>Manage patient appointments and schedules</p>
+    </div>
+    <div class="page-actions">
+        <a href="{{ url_for('add_appointment') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Schedule Appointment
+        </a>
+        <div class="view-toggle">
+            <a href="{{ url_for('appointments', view='list') }}" 
+               class="btn {% if view == 'list' %}btn-primary{% else %}btn-outline{% endif %}">
+                <i class="fas fa-list"></i> List
+            </a>
+            <a href="{{ url_for('appointments', view='calendar') }}" 
+               class="btn {% if view == 'calendar' %}btn-primary{% else %}btn-outline{% endif %}">
+                <i class="fas fa-calendar"></i> Calendar
+            </a>
+        </div>
+    </div>
+</div>
+
+{% if view == 'calendar' %}
+<div class="calendar-container">
+    <div id="calendar"></div>
+</div>
+{% else %}
+<div class="filters-section">
+    <form method="GET" class="filters-form">
+        <input type="hidden" name="view" value="list">
+        <div class="filters-grid">
+            <div class="filter-group">
+                <label for="date">Date</label>
+                <input type="date" id="date" name="date" value="{{ date_filter }}" class="form-control">
+            </div>
+            <div class="filter-group">
+                <label for="doctor">Doctor</label>
+                <select id="doctor" name="doctor" class="form-control">
+                    <option value="">All Doctors</option>
+                    {% for doctor in doctors %}
+                    <option value="{{ doctor.id }}" {% if doctor_filter == doctor.id|string %}selected{% endif %}>
+                        Dr. {{ doctor.first_name }} {{ doctor.last_name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="patient">Patient</label>
+                <select id="patient" name="patient" class="form-control">
+                    <option value="">All Patients</option>
+                    {% for patient in patients %}
+                    <option value="{{ patient.id }}" {% if patient_filter == patient.id|string %}selected{% endif %}>
+                        {{ patient.first_name }} {{ patient.last_name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="status">Status</label>
+                <select id="status" name="status" class="form-control">
+                    <option value="">All Statuses</option>
+                    <option value="scheduled" {% if status_filter == 'scheduled' %}selected{% endif %}>Scheduled</option>
+                    <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>Completed</option>
+                    <option value="cancelled" {% if status_filter == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                </select>
+            </div>
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-secondary">
+                    <i class="fas fa-filter"></i> Filter
+                </button>
+                <a href="{{ url_for('appointments', view='list') }}" class="btn btn-outline">
+                    <i class="fas fa-times"></i> Clear
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class="appointments-list">
+    {% for appointment in appointments %}
+    <div class="appointment-card">
+        <div class="appointment-date-time">
+            <div class="date">
+                <i class="fas fa-calendar"></i>
+                {{ appointment.appointment_date.strftime('%B %d, %Y') }}
+            </div>
+            <div class="time">
+                <i class="fas fa-clock"></i>
+                {{ appointment.appointment_time.strftime('%I:%M %p') }}
+            </div>
+        </div>
+        
+        <div class="appointment-details">
+            <div class="patient-info">
+                <h4>{{ appointment.patient_ref.first_name }} {{ appointment.patient_ref.last_name }}</h4>
+                <p><i class="fas fa-user"></i> {{ appointment.patient_ref.age }} years old, {{ appointment.patient_ref.gender }}</p>
+            </div>
+            <div class="doctor-info">
+                <h4>Dr. {{ appointment.doctor_ref.first_name }} {{ appointment.doctor_ref.last_name }}</h4>
+                <p><i class="fas fa-stethoscope"></i> {{ appointment.doctor_ref.specialization_ref.name }}</p>
+            </div>
+        </div>
+        
+        <div class="appointment-status">
+            <span class="status-badge status-{{ appointment.status }}">
+                {{ appointment.status.title() }}
+            </span>
+        </div>
+        
+        <div class="appointment-actions">
+            <a href="{{ url_for('appointment_detail', appointment_id=appointment.id) }}" 
+               class="btn btn-sm btn-primary">
+                <i class="fas fa-eye"></i> View
+            </a>
+            <a href="{{ url_for('edit_appointment', appointment_id=appointment.id) }}" 
+               class="btn btn-sm btn-secondary">
+                <i class="fas fa-edit"></i> Edit
+            </a>
+            <form method="POST" action="{{ url_for('delete_appointment', appointment_id=appointment.id) }}" 
+                  style="display: inline;" 
+                  onsubmit="return confirm('Are you sure you want to delete this appointment?')">
+                <button type="submit" class="btn btn-sm btn-danger">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
+            </form>
+        </div>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-calendar-times"></i>
+        <h3>No appointments found</h3>
+        <p>{% if date_filter or doctor_filter or patient_filter or status_filter %}No appointments match your filter criteria.{% else %}Start by scheduling your first appointment.{% endif %}</p>
+        {% if not date_filter and not doctor_filter and not patient_filter and not status_filter %}
+        <a href="{{ url_for('add_appointment') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Schedule First Appointment
+        </a>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if view == 'calendar' %}
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var calendarEl = document.getElementById('calendar');
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
+        events: function(fetchInfo, successCallback, failureCallback) {
+            fetch(`/api/calendar-appointments?start=${fetchInfo.startStr}&end=${fetchInfo.endStr}`)
+                .then(response => response.json())
+                .then(data => successCallback(data))
+                .catch(error => failureCallback(error));
+        },
+        eventClick: function(info) {
+            window.location.href = `/appointments/${info.event.id}`;
+        },
+        height: 'auto'
+    });
+    calendar.render();
+});
+</script>
+{% endif %}
+
+<style>
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.page-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.view-toggle {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.calendar-container {
+    background: white;
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.filters-section {
+    background: white;
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+}
+
+.filters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    align-items: end;
+}
+
+.filter-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.filter-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.appointments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.appointment-card {
+    background: white;
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    display: grid;
+    grid-template-columns: auto 1fr auto auto;
+    gap: 2rem;
+    align-items: center;
+    transition: transform 0.3s ease;
+}
+
+.appointment-card:hover {
+    transform: translateY(-2px);
+}
+
+.appointment-date-time {
+    text-align: center;
+    min-width: 150px;
+}
+
+.appointment-date-time .date {
+    color: var(--primary-color);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.appointment-date-time .time {
+    color: var(--accent-color);
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+.appointment-details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+.patient-info h4,
+.doctor-info h4 {
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+.patient-info p,
+.doctor-info p {
+    color: #666;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.appointment-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: #666;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    color: var(--accent-color);
+    margin-bottom: 1rem;
+}
+
+.empty-state h3 {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+@media (max-width: 768px) {
+    .appointment-card {
+        grid-template-columns: 1fr;
+        text-align: center;
+        gap: 1rem;
+    }
+    
+    .appointment-details {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .filters-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .filter-actions {
+        justify-content: center;
+    }
+}
+</style>
+{% endblock %}

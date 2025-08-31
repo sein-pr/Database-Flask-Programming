@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}User Management - SEIN Hospital Management{% endblock %}
+
+{% block content %}
+<div class="admin-header">
+    <h1>User Management</h1>
+    <p>Manage system users and their access</p>
+</div>
+
+<table class="admin-table">
+    <thead>
+        <tr>
+            <th>Username</th>
+            <th>Name</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Created</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user in users %}
+        <tr>
+            <td>{{ user.username }}</td>
+            <td>{{ user.first_name }} {{ user.last_name }}</td>
+            <td>
+                <span class="status-badge {% if user.role == 'admin' %}status-approved{% else %}status-pending{% endif %}">
+                    {{ user.role.title() }}
+                </span>
+            </td>
+            <td>
+                <span class="status-badge {% if user.is_active %}status-active{% else %}status-inactive{% endif %}">
+                    {% if user.is_active %}Active{% else %}Inactive{% endif %}
+                </span>
+            </td>
+            <td>{{ user.created_at.strftime('%Y-%m-%d') }}</td>
+            <td>
+                {% if user.username != 'admin' %}
+                <a href="{{ url_for('reset_password', user_id=user.id) }}" 
+                   class="btn btn-secondary btn-sm"
+                   onclick="return confirm('Reset password for {{ user.username }}?')">
+                    <i class="fas fa-key"></i> Reset Password
+                </a>
+                <a href="{{ url_for('toggle_user', user_id=user.id) }}" 
+                   class="btn {% if user.is_active %}btn-danger{% else %}btn-success{% endif %} btn-sm"
+                   onclick="return confirm('{% if user.is_active %}Deactivate{% else %}Activate{% endif %} {{ user.username }}?')">
+                    <i class="fas fa-{% if user.is_active %}ban{% else %}check{% endif %}"></i>
+                    {% if user.is_active %}Deactivate{% else %}Activate{% endif %}
+                </a>
+                {% else %}
+                <span class="text-muted">System Admin</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
+
+{% block scripts %}
+<style>
+.admin-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.admin-header h1 {
+    color: var(--primary-color);
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.text-muted {
+    color: #6c757d;
+    font-style: italic;
+}
+</style>
+{% endblock %}

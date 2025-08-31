@@ -1,0 +1,251 @@
+{% extends "base.html" %}
+
+{% block title %}Add Medical Record - {{ patient.first_name }} {{ patient.last_name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-title">
+        <h1><i class="fas fa-file-medical-alt"></i> Add Medical Record</h1>
+        <p>{{ patient.first_name }} {{ patient.last_name }} - Add new medical record</p>
+    </div>
+</div>
+
+<div class="form-container-large">
+    <form method="POST" enctype="multipart/form-data" class="record-form">
+        <div class="form-section">
+            <h3><i class="fas fa-notes-medical"></i> Medical Information</h3>
+            <div class="form-group">
+                <label for="diagnosis">Diagnosis/Condition *</label>
+                <input type="text" id="diagnosis" name="diagnosis" class="form-control" 
+                       placeholder="e.g., Hypertension, Diabetes Type 2, Annual Checkup" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="record_date">Record Date *</label>
+                <input type="date" id="record_date" name="record_date" class="form-control" 
+                       value="{{ date.today().strftime('%Y-%m-%d') }}" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="description">Description/Notes</label>
+                <textarea id="description" name="description" class="form-control" rows="4" 
+                          placeholder="Detailed description of the condition, treatment, observations, etc."></textarea>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3><i class="fas fa-paperclip"></i> File Attachment (Optional)</h3>
+            <div class="file-upload-area">
+                <input type="file" id="file" name="file" class="file-input" accept=".txt,.pdf,.png,.jpg,.jpeg,.gif,.doc,.docx,.xls,.xlsx">
+                <label for="file" class="file-upload-label">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <span>Click to select file or drag and drop</span>
+                    <small>Supported formats: PDF, Images, Word, Excel, Text files (Max 16MB)</small>
+                </label>
+                <div class="file-info" id="fileInfo" style="display: none;">
+                    <i class="fas fa-file"></i>
+                    <span id="fileName"></span>
+                    <button type="button" class="remove-file" onclick="removeFile()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Save Record
+            </button>
+            <a href="{{ url_for('patient_records', patient_id=patient.id) }}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+.form-container-large {
+    max-width: 800px;
+    margin: 0 auto;
+    background: white;
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.form-section {
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.form-section:last-of-type {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.form-section h3 {
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.form-section h3 i {
+    color: var(--accent-color);
+}
+
+.file-upload-area {
+    position: relative;
+}
+
+.file-input {
+    display: none;
+}
+
+.file-upload-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 2rem;
+    border: 2px dashed var(--accent-color);
+    border-radius: 10px;
+    background: var(--secondary-color);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.file-upload-label:hover {
+    border-color: var(--primary-color);
+    background: #f0f9f8;
+}
+
+.file-upload-label i {
+    font-size: 3rem;
+    color: var(--accent-color);
+    margin-bottom: 1rem;
+}
+
+.file-upload-label span {
+    color: var(--primary-color);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.file-upload-label small {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.file-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--secondary-color);
+    border-radius: 8px;
+    border: 1px solid var(--accent-color);
+}
+
+.file-info i {
+    color: var(--accent-color);
+    font-size: 1.2rem;
+}
+
+.file-info span {
+    flex: 1;
+    color: var(--primary-color);
+    font-weight: 500;
+}
+
+.remove-file {
+    background: var(--error-color);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.remove-file:hover {
+    background: #c0392b;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border-color);
+}
+
+@media (max-width: 768px) {
+    .form-actions {
+        flex-direction: column;
+    }
+}
+</style>
+
+<script>
+document.getElementById('file').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    const fileInfo = document.getElementById('fileInfo');
+    const fileName = document.getElementById('fileName');
+    const uploadLabel = document.querySelector('.file-upload-label');
+    
+    if (file) {
+        fileName.textContent = file.name;
+        fileInfo.style.display = 'flex';
+        uploadLabel.style.display = 'none';
+    }
+});
+
+function removeFile() {
+    const fileInput = document.getElementById('file');
+    const fileInfo = document.getElementById('fileInfo');
+    const uploadLabel = document.querySelector('.file-upload-label');
+    
+    fileInput.value = '';
+    fileInfo.style.display = 'none';
+    uploadLabel.style.display = 'flex';
+}
+
+// Drag and drop functionality
+const uploadArea = document.querySelector('.file-upload-label');
+
+uploadArea.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    this.style.borderColor = 'var(--primary-color)';
+    this.style.background = '#f0f9f8';
+});
+
+uploadArea.addEventListener('dragleave', function(e) {
+    e.preventDefault();
+    this.style.borderColor = 'var(--accent-color)';
+    this.style.background = 'var(--secondary-color)';
+});
+
+uploadArea.addEventListener('drop', function(e) {
+    e.preventDefault();
+    this.style.borderColor = 'var(--accent-color)';
+    this.style.background = 'var(--secondary-color)';
+    
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+        document.getElementById('file').files = files;
+        document.getElementById('file').dispatchEvent(new Event('change'));
+    }
+});
+</script>
+{% endblock %}

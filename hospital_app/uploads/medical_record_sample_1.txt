@@ -1,0 +1,6 @@
+Patient: John Doe
+Date: August 17, 2025
+Doctor: Dr. Jane Smith
+Diagnosis: Common Cold
+Treatment: Rest and fluids for 3-5 days. Over-the-counter cold medication as needed.
+Notes: The patient presented with a runny nose, sore throat, and a mild cough. Symptoms began approximately 2 days ago. No fever was detected.

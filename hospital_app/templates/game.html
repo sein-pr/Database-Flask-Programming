@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alliya's World - Wild West Adventure</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Rye&family=Creepster&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Rye', cursive;
+            background: linear-gradient(to bottom, #87CEEB 0%, #DEB887 30%, #D2B48C 100%);
+            overflow: hidden;
+            height: 100vh;
+        }
+        
+        #gameCanvas {
+            border: 3px solid #8B4513;
+            display: block;
+            margin: 0 auto;
+            background: linear-gradient(to bottom, #87CEEB 0%, #DEB887 30%, #D2B48C 100%);
+        }
+        
+        #ui {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #8B4513;
+            font-size: 18px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            z-index: 100;
+        }
+        
+        #dialogue {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(139, 69, 19, 0.9);
+            color: #F5DEB3;
+            padding: 15px 25px;
+            border-radius: 10px;
+            border: 3px solid #8B4513;
+            font-size: 16px;
+            max-width: 600px;
+            text-align: center;
+            display: none;
+            z-index: 100;
+        }
+        
+        #instructions {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(139, 69, 19, 0.8);
+            color: #F5DEB3;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            max-width: 200px;
+        }
+        
+        .title {
+            position: absolute;
+            top: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 36px;
+            color: #8B4513;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.7);
+            z-index: 50;
+        }
+    </style>
+</head>
+<body>
+    <h1 class="title">Alliya's World</h1>
+    <canvas id="gameCanvas" width="1000" height="600"></canvas>
+    
+    <div id="ui">
+        <div>Health: <span id="health">100</span></div>
+        <div>Ammo: ∞</div>
+        <div>Hair Confidence: <span id="hairConfidence">50</span>%</div>
+    </div>
+    
+    <div id="dialogue"></div>
+    
+    <div id="instructions">
+        <strong>Controls:</strong><br>
+        Arrow Keys - Move<br>
+        S - Mount/Dismount Horse<br>
+        F - Interact<br>
+        A - Shoot<br>
+        Mouse - Aim
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const dialogue = document.getElementById('dialogue');
+        const healthSpan = document.getElementById('health');
+        const hairConfidenceSpan = document.getElementById('hairConfidence');
+
+        // Game state
+        const game = {
+            camera: { x: 0, y: 0 },
+            worldWidth: 2000,
+            worldHeight: 1200,
+            keys: {},
+            mousePos: { x: 0, y: 0 },
+            dialogueActive: false,
+            currentDialogue: null
+        };
+
+        // Player object
+        const player = {
+            x: 500,
+            y: 300,
+            width: 30,
+            height: 40,
+            speed: 3,
+            health: 100,
+            hairConfidence: 50,
+            onHorse: false,
+            color: '#FF69B4', // Pink for Alliya
+            angle: 0,
+            lastShot: 0
+        };
+
+        // Horse object
+        const horse = {
+            x: 520,
+            y: 320,
+            width: 60,
+            height: 40,
+            speed: 6,
+            color: '#8B4513',
+            crazy: true
+        };
+
+        // NPCs
+        const npcs = [
+            {
+                x: 800,
+                y: 200,
+                width: 30,
+                height: 40,
+                color: '#4169E1',
+                name: 'Jake',
+                type: 'hairCritic',
+                dialogues: [
+                    "Your hair? Meh, I've seen better tumbleweeds.",
+                    "Still trying to convince me? That hair ain't special.",
+                    "Maybe if you styled it different... nah, still not impressed.",
+                    "Alright, alright... your hair's... decent, I guess."
+                ],
+                currentDialogue: 0,
+                convinced: false
+            },
+            {
+                x: 300,
+                y: 400,
+                width: 30,
+                height: 40,
+                color: '#32CD32',
+                name: 'Sally',
+                type: 'friendly',
+                dialogues: [
+                    "Howdy Alliya! Your hair looks magnificent as always!",
+                    "Don't let that Jake fellow get you down, sugar.",
+                    "Keep showing him how fabulous you are!"
+                ],
+                currentDialogue: 0
+            },
+            {
+                x: 1200,
+                y: 500,
+                width: 30,
+                height: 40,
+                color: '#DAA520',
+                name: 'Sheriff',
+                type: 'authority',
+                dialogues: [
+                    "Welcome to Dusty Creek, miss. Watch out for them zombies!",
+                    "That's some fine shootin' you got there!",
+                    "Keep this town safe, will ya?"
+                ],
+                currentDialogue: 0
+            }
+        ];
+
+        // Zombies
+        const zombies = [];
+        const bullets = [];
+
+        // Spawn zombies randomly
+        function spawnZombie() {
+            const zombie = {
+                x: Math.random() * game.worldWidth,
+                y: Math.random() * game.worldHeight,
+                width: 25,
+                height: 35,
+                speed: 1,
+                health: 30,
+                color: '#228B22',
+                lastAttack: 0
+            };
+            zombies.push(zombie);
+        }
+
+        // Initialize zombies
+        for (let i = 0; i < 8; i++) {
+            spawnZombie();
+        }
+
+        // Event listeners
+        document.addEventListener('keydown', (e) => {
+            game.keys[e.key.toLowerCase()] = true;
+            
+            if (e.key.toLowerCase() === 'f' && !game.dialogueActive) {
+                interactWithNPC();
+            }
+            
+            if (e.key.toLowerCase() === 's') {
+                toggleHorse();
+            }
+            
+            if (e.key.toLowerCase() === 'a') {
+                e.preventDefault();
+                shoot();
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            game.keys[e.key.toLowerCase()] = false;
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            game.mousePos.x = e.clientX - rect.left;
+            game.mousePos.y = e.clientY - rect.top;
+        });
+
+        canvas.addEventListener('click', () => {
+            if (game.dialogueActive) {
+                closeDialogue();
+            } else {
+                shoot();
+            }
+        });
+
+        function toggleHorse() {
+            const distance = Math.sqrt((player.x - horse.x) ** 2 + (player.y - horse.y) ** 2);
+            
+            if (distance < 50) {
+                player.onHorse = !player.onHorse;
+                if (player.onHorse) {
+                    showDialogue("Yeehaw! Let's ride, you crazy horse!");
+                } else {
+                    showDialogue("Easy there, partner!");
+                }
+            }
+        }
+
+        function interactWithNPC() {
+            npcs.forEach(npc => {
+                const distance = Math.sqrt((player.x - npc.x) ** 2 + (player.y - npc.y) ** 2);
+                if (distance < 60) {
+                    if (npc.type === 'hairCritic') {
+                        interactWithJake(npc);
+                    } else {
+                        showDialogue(`${npc.name}: ${npc.dialogues[npc.currentDialogue]}`);
+                        npc.currentDialogue = (npc.currentDialogue + 1) % npc.dialogues.length;
+                    }
+                }
+            });
+        }
+
+        function interactWithJake(jake) {
+            if (!jake.convinced) {
+                showDialogue(`Jake: ${jake.dialogues[jake.currentDialogue]}`);
+                jake.currentDialogue++;
+                
+                if (jake.currentDialogue >= jake.dialogues.length) {
+                    jake.convinced = true;
+                    player.hairConfidence = Math.min(100, player.hairConfidence + 20);
+                    showDialogue("Jake: Fine! Your hair is... actually pretty amazing. Happy now?");
+                }
+            } else {
+                showDialogue("Jake: Your hair really is something special, Alliya.");
+            }
+        }
+
+        function shoot() {
+            const now = Date.now();
+            if (now - player.lastShot < 200) return; // Rate limit
+            
+            player.lastShot = now;
+            
+            const bullet = {
+                x: player.x + player.width / 2,
+                y: player.y + player.height / 2,
+                width: 4,
+                height: 4,
+                speed: 8,
+                angle: player.angle,
+                dx: Math.cos(player.angle) * 8,
+                dy: Math.sin(player.angle) * 8
+            };
+            
+            bullets.push(bullet);
+        }
+
+        function showDialogue(text) {
+            dialogue.textContent = text;
+            dialogue.style.display = 'block';
+            game.dialogueActive = true;
+            
+            setTimeout(() => {
+                closeDialogue();
+            }, 3000);
+        }
+
+        function closeDialogue() {
+            dialogue.style.display = 'none';
+            game.dialogueActive = false;
+        }
+
+        function updatePlayer() {
+            if (game.dialogueActive) return;
+            
+            const speed = player.onHorse ? horse.speed : player.speed;
+            
+            if (game.keys['arrowup']) {
+                player.y -= speed;
+                if (player.onHorse) horse.y = player.y + 20;
+            }
+            if (game.keys['arrowdown']) {
+                player.y += speed;
+                if (player.onHorse) horse.y = player.y + 20;
+            }
+            if (game.keys['arrowleft']) {
+                player.x -= speed;
+                if (player.onHorse) horse.x = player.x - 10;
+            }
+            if (game.keys['arrowright']) {
+                player.x += speed;
+                if (player.onHorse) horse.x = player.x - 10;
+            }
+            
+            // Keep player in bounds
+            player.x = Math.max(0, Math.min(game.worldWidth - player.width, player.x));
+            player.y = Math.max(0, Math.min(game.worldHeight - player.height, player.y));
+            
+            // Update player angle based on mouse position
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            player.angle = Math.atan2(game.mousePos.y - centerY, game.mousePos.x - centerX);
+        }
+
+        function updateZombies() {
+            zombies.forEach((zombie, index) => {
+                // Move towards player
+                const dx = player.x - zombie.x;
+                const dy = player.y - zombie.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance > 0) {
+                    zombie.x += (dx / distance) * zombie.speed;
+                    zombie.y += (dy / distance) * zombie.speed;
+                }
+                
+                // Attack player if close
+                if (distance < 40 && Date.now() - zombie.lastAttack > 1000) {
+                    player.health -= 10;
+                    zombie.lastAttack = Date.now();
+                    showDialogue("Zombie bite! Ouch!");
+                }
+                
+                // Remove if health is 0
+                if (zombie.health <= 0) {
+                    zombies.splice(index, 1);
+                    // Spawn new zombie
+                    setTimeout(spawnZombie, 5000);
+                }
+            });
+        }
+
+        function updateBullets() {
+            bullets.forEach((bullet, bulletIndex) => {
+                bullet.x += bullet.dx;
+                bullet.y += bullet.dy;
+                
+                // Remove bullets that go off screen
+                if (bullet.x < 0 || bullet.x > game.worldWidth || 
+                    bullet.y < 0 || bullet.y > game.worldHeight) {
+                    bullets.splice(bulletIndex, 1);
+                    return;
+                }
+                
+                // Check collision with zombies
+                zombies.forEach((zombie, zombieIndex) => {
+                    if (bullet.x < zombie.x + zombie.width &&
+                        bullet.x + bullet.width > zombie.x &&
+                        bullet.y < zombie.y + zombie.height &&
+                        bullet.y + bullet.height > zombie.y) {
+                        
+                        zombie.health -= 15;
+                        bullets.splice(bulletIndex, 1);
+                        
+                        if (zombie.health <= 0) {
+                            player.hairConfidence = Math.min(100, player.hairConfidence + 2);
+                        }
+                    }
+                });
+            });
+        }
+
+        function updateCamera() {
+            // Center camera on player
+            game.camera.x = player.x - canvas.width / 2;
+            game.camera.y = player.y - canvas.height / 2;
+            
+            // Keep camera in bounds
+            game.camera.x = Math.max(0, Math.min(game.worldWidth - canvas.width, game.camera.x));
+            game.camera.y = Math.max(0, Math.min(game.worldHeight - canvas.height, game.camera.y));
+        }
+
+        function drawBackground() {
+            // Draw desert background
+            ctx.fillStyle = '#DEB887';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw some cacti and rocks
+            ctx.fillStyle = '#228B22';
+            for (let i = 0; i < 20; i++) {
+                const x = (i * 100 + 50) - game.camera.x;
+                const y = (i * 60 + 200) - game.camera.y;
+                if (x > -50 && x < canvas.width + 50 && y > -50 && y < canvas.height + 50) {
+                    ctx.fillRect(x, y, 15, 40);
+                    ctx.fillRect(x - 10, y + 10, 35, 8);
+                }
+            }
+            
+            // Draw some buildings
+            ctx.fillStyle = '#8B4513';
+            const buildings = [
+                {x: 100, y: 150, w: 120, h: 80},
+                {x: 400, y: 200, w: 100, h: 70},
+                {x: 900, y: 180, w: 140, h: 90},
+                {x: 1400, y: 160, w: 110, h: 85}
+            ];
+            
+            buildings.forEach(building => {
+                const x = building.x - game.camera.x;
+                const y = building.y - game.camera.y;
+                if (x > -building.w && x < canvas.width + building.w) {
+                    ctx.fillRect(x, y, building.w, building.h);
+                    ctx.fillStyle = '#654321';
+                    ctx.fillRect(x, y - 20, building.w, 20);
+                    ctx.fillStyle = '#8B4513';
+                }
+            });
+        }
+
+        function drawPlayer() {
+            const screenX = player.x - game.camera.x;
+            const screenY = player.y - game.camera.y;
+            
+            ctx.save();
+            ctx.translate(screenX + player.width / 2, screenY + player.height / 2);
+            
+            // Draw player (Alliya)
+            ctx.fillStyle = player.color;
+            ctx.fillRect(-player.width / 2, -player.height / 2, player.width, player.height);
+            
+            // Draw her fabulous hair
+            ctx.fillStyle = '#FFD700'; // Golden hair
+            ctx.fillRect(-player.width / 2 - 5, -player.height / 2 - 10, player.width + 10, 15);
+            
+            // Draw gun
+            ctx.rotate(player.angle);
+            ctx.fillStyle = '#696969';
+            ctx.fillRect(15, -2, 20, 4);
+            
+            ctx.restore();
+        }
+
+        function drawHorse() {
+            if (!player.onHorse) {
+                const screenX = horse.x - game.camera.x;
+                const screenY = horse.y - game.camera.y;
+                
+                ctx.fillStyle = horse.color;
+                ctx.fillRect(screenX, screenY, horse.width, horse.height);
+                
+                // Draw horse details
+                ctx.fillStyle = '#654321';
+                ctx.fillRect(screenX + 5, screenY - 10, 15, 10); // Head
+                ctx.fillRect(screenX + 10, screenY + horse.height, 8, 15); // Legs
+                ctx.fillRect(screenX + 35, screenY + horse.height, 8, 15);
+            }
+        }
+
+        function drawNPCs() {
+            npcs.forEach(npc => {
+                const screenX = npc.x - game.camera.x;
+                const screenY = npc.y - game.camera.y;
+                
+                if (screenX > -50 && screenX < canvas.width + 50) {
+                    ctx.fillStyle = npc.color;
+                    ctx.fillRect(screenX, screenY, npc.width, npc.height);
+                    
+                    // Draw name
+                    ctx.fillStyle = '#000';
+                    ctx.font = '12px Rye';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(npc.name, screenX + npc.width / 2, screenY - 5);
+                    
+                    // Draw interaction indicator if close
+                    const distance = Math.sqrt((player.x - npc.x) ** 2 + (player.y - npc.y) ** 2);
+                    if (distance < 60) {
+                        ctx.fillStyle = '#FFD700';
+                        ctx.fillText('Press F', screenX + npc.width / 2, screenY - 20);
+                    }
+                }
+            });
+        }
+
+        function drawZombies() {
+            zombies.forEach(zombie => {
+                const screenX = zombie.x - game.camera.x;
+                const screenY = zombie.y - game.camera.y;
+                
+                if (screenX > -50 && screenX < canvas.width + 50) {
+                    ctx.fillStyle = zombie.color;
+                    ctx.fillRect(screenX, screenY, zombie.width, zombie.height);
+                    
+                    // Draw zombie details
+                    ctx.fillStyle = '#FF0000';
+                    ctx.fillRect(screenX + 5, screenY + 5, 5, 5); // Eyes
+                    ctx.fillRect(screenX + 15, screenY + 5, 5, 5);
+                }
+            });
+        }
+
+        function drawBullets() {
+            ctx.fillStyle = '#FFD700';
+            bullets.forEach(bullet => {
+                const screenX = bullet.x - game.camera.x;
+                const screenY = bullet.y - game.camera.y;
+                ctx.fillRect(screenX, screenY, bullet.width, bullet.height);
+            });
+        }
+
+        function updateUI() {
+            healthSpan.textContent = player.health;
+            hairConfidenceSpan.textContent = player.hairConfidence;
+            
+            if (player.health <= 0) {
+                showDialogue("Game Over! Your hair legacy lives on...");
+                setTimeout(() => {
+                    player.health = 100;
+                    player.x = 500;
+                    player.y = 300;
+                }, 3000);
+            }
+        }
+
+        function gameLoop() {
+            // Update
+            updatePlayer();
+            updateZombies();
+            updateBullets();
+            updateCamera();
+            updateUI();
+            
+            // Draw
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawBackground();
+            drawHorse();
+            drawPlayer();
+            drawNPCs();
+            drawZombies();
+            drawBullets();
+            
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Start the game
+        showDialogue("Welcome to Dusty Creek! Show everyone your fabulous hair!");
+        gameLoop();
+    </script>
+</body>
+</html>

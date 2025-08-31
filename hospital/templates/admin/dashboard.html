@@ -1,0 +1,416 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - SEIN Hospital Management{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard">
+    <div class="dashboard-header">
+        <h1><i class="fas fa-tachometer-alt"></i> Admin Dashboard</h1>
+        <p>System overview and management tools</p>
+    </div>
+
+     Statistics Cards 
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-content">
+                <h3>{{ total_users }}</h3>
+                <p>Total Users</p>
+                <small>{{ active_users }} active</small>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-user-injured"></i>
+            </div>
+            <div class="stat-content">
+                <h3>{{ total_patients }}</h3>
+                <p>Total Patients</p>
+                <small>{{ recent_patients }} this month</small>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-user-md"></i>
+            </div>
+            <div class="stat-content">
+                <h3>{{ total_doctors }}</h3>
+                <p>Total Doctors</p>
+                <small>{{ specializations_count }} specializations</small>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <div class="stat-content">
+                <h3>{{ total_appointments }}</h3>
+                <p>Total Appointments</p>
+                <small>{{ today_appointments }} today</small>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-content">
+                <h3>{{ pending_requests }}</h3>
+                <p>Pending Requests</p>
+                <small>Awaiting approval</small>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-file-medical"></i>
+            </div>
+            <div class="stat-content">
+                <h3>{{ total_records }}</h3>
+                <p>Medical Records</p>
+                <small>{{ recent_records }} this week</small>
+            </div>
+        </div>
+    </div>
+
+     Quick Actions 
+    <div class="quick-actions">
+        <h2><i class="fas fa-bolt"></i> Quick Actions</h2>
+        <div class="actions-grid">
+            <a href="{{ url_for('admin_access_requests') }}" class="action-card">
+                <div class="action-icon">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+                <div class="action-content">
+                    <h3>Access Requests</h3>
+                    <p>Review and approve user access requests</p>
+                    {% if pending_requests > 0 %}
+                    <span class="notification-badge">{{ pending_requests }}</span>
+                    {% endif %}
+                </div>
+            </a>
+
+            <a href="{{ url_for('admin_users') }}" class="action-card">
+                <div class="action-icon">
+                    <i class="fas fa-users-cog"></i>
+                </div>
+                <div class="action-content">
+                    <h3>User Management</h3>
+                    <p>Manage system users and permissions</p>
+                </div>
+            </a>
+
+            <a href="{{ url_for('patients') }}" class="action-card">
+                <div class="action-icon">
+                    <i class="fas fa-user-injured"></i>
+                </div>
+                <div class="action-content">
+                    <h3>Patient Management</h3>
+                    <p>View and manage patient records</p>
+                </div>
+            </a>
+
+            <a href="{{ url_for('doctors') }}" class="action-card">
+                <div class="action-icon">
+                    <i class="fas fa-user-md"></i>
+                </div>
+                <div class="action-content">
+                    <h3>Doctor Management</h3>
+                    <p>Manage doctors and specializations</p>
+                </div>
+            </a>
+
+            <a href="{{ url_for('appointments') }}" class="action-card">
+                <div class="action-icon">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <div class="action-content">
+                    <h3>Appointments</h3>
+                    <p>View and manage appointments</p>
+                </div>
+            </a>
+
+            <a href="#" class="action-card" onclick="generateSystemReport()">
+                <div class="action-icon">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+                <div class="action-content">
+                    <h3>System Reports</h3>
+                    <p>Generate comprehensive system reports</p>
+                </div>
+            </a>
+        </div>
+    </div>
+
+     Recent Activity 
+    <div class="recent-activity">
+        <h2><i class="fas fa-history"></i> Recent Activity</h2>
+        <div class="activity-list">
+            {% for activity in recent_activities %}
+            <div class="activity-item">
+                <div class="activity-icon">
+                    <i class="fas fa-{{ activity.icon }}"></i>
+                </div>
+                <div class="activity-content">
+                    <p><strong>{{ activity.action }}</strong></p>
+                    <p>{{ activity.description }}</p>
+                    <small>{{ activity.timestamp.strftime('%B %d, %Y at %I:%M %p') }}</small>
+                </div>
+            </div>
+            {% else %}
+            <p class="no-activity">No recent activity to display.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<style>
+.admin-dashboard {
+    padding: 2rem 0;
+}
+
+.dashboard-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.dashboard-header h1 {
+    color: #073649;
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.dashboard-header p {
+    color: #666;
+    font-size: 1.1rem;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+.stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #073649, #50a69e);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+}
+
+.stat-content h3 {
+    font-size: 2rem;
+    color: #073649;
+    margin: 0 0 0.25rem 0;
+}
+
+.stat-content p {
+    color: #666;
+    margin: 0 0 0.25rem 0;
+    font-weight: 600;
+}
+
+.stat-content small {
+    color: #50a69e;
+    font-size: 0.85rem;
+}
+
+.quick-actions, .recent-activity {
+    margin-bottom: 3rem;
+}
+
+.quick-actions h2, .recent-activity h2 {
+    color: #073649;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.action-card {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    position: relative;
+}
+
+.action-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    text-decoration: none;
+    color: inherit;
+}
+
+.action-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 8px;
+    background: #e7f7f4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #50a69e;
+    font-size: 1.25rem;
+}
+
+.action-content h3 {
+    color: #073649;
+    margin: 0 0 0.5rem 0;
+    font-size: 1.1rem;
+}
+
+.action-content p {
+    color: #666;
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.notification-badge {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: #dc3545;
+    color: white;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: bold;
+}
+
+.activity-list {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.activity-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+}
+
+.activity-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #e7f7f4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #50a69e;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.activity-content p {
+    margin: 0 0 0.25rem 0;
+}
+
+.activity-content small {
+    color: #666;
+    font-size: 0.85rem;
+}
+
+.no-activity {
+    text-align: center;
+    color: #666;
+    font-style: italic;
+    padding: 2rem;
+}
+
+@media (max-width: 768px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .actions-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .stat-card, .action-card {
+        padding: 1.5rem;
+    }
+    
+    .dashboard-header h1 {
+        font-size: 2rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function generateSystemReport() {
+    if (confirm('Generate a comprehensive system report? This may take a few moments.')) {
+        // Show loading state
+        const button = event.target.closest('.action-card');
+        const originalContent = button.innerHTML;
+        button.innerHTML = '<div class="action-icon"><i class="fas fa-spinner fa-spin"></i></div><div class="action-content"><h3>Generating Report...</h3><p>Please wait while we compile the data</p></div>';
+        
+        // Simulate report generation
+        setTimeout(() => {
+            alert('System report generated successfully! Check your downloads folder.');
+            button.innerHTML = originalContent;
+        }, 3000);
+    }
+}
+
+// Auto-refresh dashboard every 5 minutes
+setInterval(() => {
+    if (document.visibilityState === 'visible') {
+        location.reload();
+    }
+}, 300000);
+</script>
+{% endblock %}

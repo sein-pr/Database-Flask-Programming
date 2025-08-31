@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+
+{% block title %}Schedule Appointment - SEIN Hospital Management{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-title">
+        <h1><i class="fas fa-calendar-plus"></i> Schedule New Appointment</h1>
+        <p>Book an appointment for a patient</p>
+    </div>
+</div>
+
+<div class="form-container-large">
+    <form method="POST" class="appointment-form" id="appointmentForm">
+        <div class="form-section">
+            <h3><i class="fas fa-users"></i> Patient & Doctor Selection</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="patient_id">Patient *</label>
+                    <select id="patient_id" name="patient_id" class="form-control" required>
+                        <option value="">Select Patient</option>
+                        {% for patient in patients %}
+                        <option value="{{ patient.id }}">
+                            {{ patient.first_name }} {{ patient.last_name }} ({{ patient.age }} years)
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="doctor_id">Doctor *</label>
+                    <select id="doctor_id" name="doctor_id" class="form-control" required>
+                        <option value="">Select Doctor</option>
+                        {% for doctor in doctors %}
+                        <option value="{{ doctor.id }}">
+                            Dr. {{ doctor.first_name }} {{ doctor.last_name }} - {{ doctor.specialization_ref.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3><i class="fas fa-calendar-alt"></i> Date & Time Selection</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="appointment_date">Appointment Date *</label>
+                    <input type="date" id="appointment_date" name="appointment_date" class="form-control" 
+                           min="{{ (datetime.now() + timedelta(days=1)).strftime('%Y-%m-%d') }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="appointment_time">Appointment Time *</label>
+                    <select id="appointment_time" name="appointment_time" class="form-control" required disabled>
+                        <option value="">Select date and doctor first</option>
+                    </select>
+                </div>
+            </div>
+            <div class="availability-info" id="availabilityInfo" style="display: none;">
+                <p><i class="fas fa-info-circle"></i> Available time slots will appear after selecting a doctor and date.</p>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3><i class="fas fa-notes-medical"></i> Additional Information</h3>
+            <div class="form-group">
+                <label for="diagnosis">Initial Diagnosis/Reason</label>
+                <input type="text" id="diagnosis" name="diagnosis" class="form-control" 
+                       placeholder="e.g., Regular checkup, Follow-up visit, Consultation">
+            </div>
+            <div class="form-group">
+                <label for="notes">Notes</label>
+                <textarea id="notes" name="notes" class="form-control" rows="3" 
+                          placeholder="Any additional notes or special instructions"></textarea>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Schedule Appointment
+            </button>
+            <a href="{{ url_for('appointments') }}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+.form-container-large {
+    max-width: 800px;
+    margin: 0 auto;
+    background: white;
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.form-section {
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.form-section:last-of-type {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.form-section h3 {
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.form-section h3 i {
+    color: var(--accent-color);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.availability-info {
+    background: var(--secondary-color);
+    padding: 1rem;
+    border-radius: 8px;
+    color: var(--primary-color);
+    margin-top: 1rem;
+}
+
+.availability-info i {
+    color: var(--accent-color);
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border-color);
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const doctorSelect = document.getElementById('doctor_id');
+    const dateInput = document.getElementById('appointment_date');
+    const timeSelect = document.getElementById('appointment_time');
+    const availabilityInfo = document.getElementById('availabilityInfo');
+
+    function updateAvailableTimes() {
+        const doctorId = doctorSelect.value;
+        const selectedDate = dateInput.value;
+
+        if (!doctorId || !selectedDate) {
+            timeSelect.disabled = true;
+            timeSelect.innerHTML = '<option value="">Select doctor and date first</option>';
+            availabilityInfo.style.display = 'none';
+            return;
+        }
+
+        // Show loading
+        timeSelect.disabled = true;
+        timeSelect.innerHTML = '<option value="">Loading available times...</option>';
+        availabilityInfo.style.display = 'block';
+
+        // Fetch available times
+        fetch(`/api/doctor-availability/${doctorId}?date=${selectedDate}`)
+            .then(response => response.json())
+            .then(data => {
+                timeSelect.innerHTML = '';
+                
+                if (data.available_times && data.available_times.length > 0) {
+                    timeSelect.innerHTML = '<option value="">Select time</option>';
+                    data.available_times.forEach(slot => {
+                        const option = document.createElement('option');
+                        option.value = slot.time;
+                        option.textContent = slot.display;
+                        timeSelect.appendChild(option);
+                    });
+                    timeSelect.disabled = false;
+                    availabilityInfo.innerHTML = `<p><i class="fas fa-check-circle"></i> ${data.available_times.length} time slots available</p>`;
+                } else {
+                    timeSelect.innerHTML = '<option value="">No available times</option>';
+                    availabilityInfo.innerHTML = '<p><i class="fas fa-exclamation-triangle"></i> No available time slots for this date. Please select a different date.</p>';
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching availability:', error);
+                timeSelect.innerHTML = '<option value="">Error loading times</option>';
+                availabilityInfo.innerHTML = '<p><i class="fas fa-exclamation-circle"></i> Error loading available times. Please try again.</p>';
+            });
+    }
+
+    doctorSelect.addEventListener('change', updateAvailableTimes);
+    dateInput.addEventListener('change', updateAvailableTimes);
+
+    // Set minimum date to tomorrow
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    dateInput.min = tomorrow.toISOString().split('T')[0];
+});
+</script>
+{% endblock %}

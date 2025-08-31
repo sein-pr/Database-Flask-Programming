@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - SEIN Hospital Management{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <h1>Dashboard</h1>
+    <p>Welcome back, {{ session.first_name }}!</p>
+</div>
+
+<div class="dashboard-grid">
+    <div class="dashboard-card">
+        <i class="fas fa-users"></i>
+        <h3>{{ total_patients }}</h3>
+        <p>Total Patients</p>
+    </div>
+    
+    <div class="dashboard-card">
+        <i class="fas fa-user-md"></i>
+        <h3>{{ total_doctors }}</h3>
+        <p>Total Doctors</p>
+    </div>
+    
+    <div class="dashboard-card">
+        <i class="fas fa-calendar-alt"></i>
+        <h3>{{ total_appointments }}</h3>
+        <p>Total Appointments</p>
+    </div>
+    
+    {% if session.role == 'admin' %}
+    <div class="dashboard-card">
+        <i class="fas fa-clock"></i>
+        <h3>{{ pending_requests }}</h3>
+        <p>Pending Requests</p>
+    </div>
+    {% endif %}
+</div>
+
+<div class="quick-actions">
+    <h2>Quick Actions</h2>
+    <div class="action-buttons">
+        <a href="#" class="btn btn-primary">Add New Patient</a>
+        <a href="#" class="btn btn-secondary">Schedule Appointment</a>
+        <a href="#" class="btn btn-success">View Reports</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+.dashboard-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.dashboard-header h1 {
+    color: var(--primary-color);
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.quick-actions {
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+.quick-actions h2 {
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+</style>
+{% endblock %}

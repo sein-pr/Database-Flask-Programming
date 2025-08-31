@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card patient-section">
+    <h2>Patients</h2>
+    <div class="add-button-container">
+        <a href="{{ url_for('add_patient_form') }}" class="button primary">Add New Patient</a>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Patient Name</th>
+                <th>Age</th>
+                <th>Gender</th>
+                <th class="table-action">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for patient in patients %}
+            <tr>
+                <td><a href="{{ url_for('patient_details', id=patient.id) }}" class="patient-link">{{ patient.full_name }}</a></td>
+                <td>{{ patient.age }}</td>
+                <td>{{ patient.gender }}</td>
+                <td class="table-action">
+                    <a href="{{ url_for('delete_patient', id=patient.id) }}" onclick="return confirm('Are you sure you want to delete this patient and all their associated records?');">Delete</a>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="4" style="text-align: center;">No patients found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="card appointment-section">
+    <h2>Appointments</h2>
+    <div class="add-button-container">
+        <a href="{{ url_for('add_appointment_form') }}" class="button primary">Schedule New Appointment</a>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Patient</th>
+                <th>Doctor</th>
+                <th>Date & Time</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for appointment in appointments %}
+            <tr>
+                <td>{{ appointment.patient.full_name }}</td>
+                <td>{{ appointment.doctor.full_name }}</td>
+                <td>{{ appointment.date_time.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td>
+                    <a href="{{ url_for('delete_appointment', id=appointment.id) }}" onclick="return confirm('Are you sure you want to delete this appointment?');">Delete</a>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="4" style="text-align: center;">No appointments found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="card doctor-section">
+    <h2>Doctors</h2>
+    <div class="add-button-container">
+        <button onclick="showAddDoctorForm()" class="button primary">Add New Doctor</button>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Doctor Name</th>
+                <th>Specialization</th>
+                <th class="table-action">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for doctor in doctors %}
+            <tr>
+                <td>{{ doctor.full_name }}</td>
+                <td>{{ doctor.specialization }}</td>
+                <td class="table-action">
+                    <a href="{{ url_for('delete_doctor', id=doctor.id) }}" onclick="return confirm('Are you sure you want to delete this doctor and all their associated appointments?');">Delete</a>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="3" style="text-align: center;">No doctors found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Add Doctor Modal -->
+<div id="addDoctorModal" class="modal">
+    <div class="modal-content">
+        <span class="close-button" onclick="closeAddDoctorForm()">&times;</span>
+        <h3>Add New Doctor</h3>
+        <form method="POST" action="{{ url_for('add_doctor') }}">
+            <div class="form-group">
+                <label for="doctor-fname">First Name</label>
+                <input type="text" id="doctor-fname" name="first_name" required>
+            </div>
+            <div class="form-group">
+                <label for="doctor-lname">Last Name</label>
+                <input type="text" id="doctor-lname" name="last_name" required>
+            </div>
+            <div class="form-group">
+                <label for="specialization">Specialization</label>
+                <input type="text" id="specialization" name="specialization" required>
+            </div>
+            <button type="submit" class="button primary">Add Doctor</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function showAddDoctorForm() {
+        document.getElementById('addDoctorModal').style.display = 'flex';
+    }
+    function closeAddDoctorForm() {
+        document.getElementById('addDoctorModal').style.display = 'none';
+    }
+    window.onclick = function(event) {
+        const modal = document.getElementById('addDoctorModal');
+        if (event.target === modal) {
+            closeAddDoctorForm();
+        }
+    }
+</script>
+{% endblock %}

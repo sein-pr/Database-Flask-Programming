@@ -1,0 +1,305 @@
+{% extends "base.html" %}
+
+{% block title %}Patients - SEIN Hospital Management{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-title">
+        <h1><i class="fas fa-users"></i> Patients</h1>
+        <p>Manage patient records and information</p>
+    </div>
+    <div class="page-actions">
+        <a href="{{ url_for('add_patient') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Add New Patient
+        </a>
+    </div>
+</div>
+
+<div class="search-section">
+    <form method="GET" class="search-form">
+        <div class="search-input-group">
+            <input type="text" name="search" value="{{ search }}" 
+                   placeholder="Search patients by name, phone, or email..." 
+                   class="form-control search-input">
+            <button type="submit" class="btn btn-secondary">
+                <i class="fas fa-search"></i> Search
+            </button>
+            {% if search %}
+            <a href="{{ url_for('patients') }}" class="btn btn-outline">
+                <i class="fas fa-times"></i> Clear
+            </a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<div class="patients-grid">
+    {% for patient in patients.items %}
+    <div class="patient-card">
+        <div class="patient-avatar">
+            <div class="avatar-circle">
+                {{ patient.first_name[0] }}{{ patient.last_name[0] }}
+            </div>
+        </div>
+        <div class="patient-info">
+            <h3>{{ patient.first_name }} {{ patient.last_name }}</h3>
+            <div class="patient-details">
+                <p><i class="fas fa-birthday-cake"></i> {{ patient.age }} years old</p>
+                <p><i class="fas fa-venus-mars"></i> {{ patient.gender }}</p>
+                {% if patient.phone %}
+                <p><i class="fas fa-phone"></i> {{ patient.phone }}</p>
+                {% endif %}
+                {% if patient.email %}
+                <p><i class="fas fa-envelope"></i> {{ patient.email }}</p>
+                {% endif %}
+            </div>
+            <div class="patient-stats">
+                <span class="stat-badge">
+                    <i class="fas fa-calendar-check"></i>
+                    {{ patient.admission_count }} visits
+                </span>
+            </div>
+        </div>
+        <div class="patient-actions">
+            <a href="{{ url_for('patient_detail', patient_id=patient.id) }}" 
+               class="btn btn-sm btn-primary">
+                <i class="fas fa-eye"></i> View
+            </a>
+            <a href="{{ url_for('edit_patient', patient_id=patient.id) }}" 
+               class="btn btn-sm btn-secondary">
+                <i class="fas fa-edit"></i> Edit
+            </a>
+            <form method="POST" action="{{ url_for('delete_patient', patient_id=patient.id) }}" 
+                  style="display: inline;" 
+                  onsubmit="return confirm('Are you sure you want to delete this patient? This will also delete all related appointments and medical records.')">
+                <button type="submit" class="btn btn-sm btn-danger">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
+            </form>
+        </div>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-users"></i>
+        <h3>No patients found</h3>
+        <p>{% if search %}No patients match your search criteria.{% else %}Start by adding your first patient.{% endif %}</p>
+        {% if not search %}
+        <a href="{{ url_for('add_patient') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Add First Patient
+        </a>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+
+{% if patients.pages > 1 %}
+<div class="pagination">
+    {% if patients.has_prev %}
+    <a href="{{ url_for('patients', page=patients.prev_num, search=search) }}" class="btn btn-outline">
+        <i class="fas fa-chevron-left"></i> Previous
+    </a>
+    {% endif %}
+    
+    <span class="pagination-info">
+        Page {{ patients.page }} of {{ patients.pages }} 
+        ({{ patients.total }} total patients)
+    </span>
+    
+    {% if patients.has_next %}
+    <a href="{{ url_for('patients', page=patients.next_num, search=search) }}" class="btn btn-outline">
+        Next <i class="fas fa-chevron-right"></i>
+    </a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<style>
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.page-title h1 {
+    color: var(--primary-color);
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.page-title h1 i {
+    color: var(--accent-color);
+    margin-right: 0.5rem;
+}
+
+.search-section {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+}
+
+.search-input-group {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.search-input {
+    flex: 1;
+    max-width: 400px;
+}
+
+.patients-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.patient-card {
+    background: white;
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.patient-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+}
+
+.patient-avatar {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.avatar-circle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-weight: bold;
+    margin: 0 auto;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.patient-info h3 {
+    text-align: center;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+}
+
+.patient-details p {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-dark);
+}
+
+.patient-details i {
+    color: var(--accent-color);
+    width: 16px;
+}
+
+.patient-stats {
+    text-align: center;
+    margin: 1rem 0;
+}
+
+.stat-badge {
+    background: var(--secondary-color);
+    color: var(--primary-color);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.patient-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    margin-top: 1.5rem;
+}
+
+.empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 4rem 2rem;
+    color: #666;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    color: var(--accent-color);
+    margin-bottom: 1rem;
+}
+
+.empty-state h3 {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.pagination-info {
+    color: var(--text-dark);
+    font-weight: 500;
+}
+
+.btn-outline {
+    background: transparent;
+    border: 2px solid var(--accent-color);
+    color: var(--accent-color);
+}
+
+.btn-outline:hover {
+    background: var(--accent-color);
+    color: white;
+}
+
+@media (max-width: 768px) {
+    .patients-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .search-input-group {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .search-input {
+        max-width: none;
+    }
+    
+    .page-header {
+        text-align: center;
+    }
+    
+    .pagination {
+        flex-direction: column;
+        gap: 1rem;
+    }
+}
+</style>
+{% endblock %}

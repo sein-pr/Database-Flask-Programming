@@ -1,0 +1,400 @@
+{% extends "base.html" %}
+
+{% block title %}{{ patient.first_name }} {{ patient.last_name }} - SEIN Hospital Management{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-title">
+        <h1><i class="fas fa-user"></i> Patient Details</h1>
+        <p>Complete patient information and medical history</p>
+    </div>
+    <div class="page-actions">
+        <a href="{{ url_for('patient_records', patient_id=patient.id) }}" class="btn btn-primary">
+            <i class="fas fa-file-medical"></i> Medical Records
+        </a>
+        <a href="{{ url_for('edit_patient', patient_id=patient.id) }}" class="btn btn-secondary">
+            <i class="fas fa-edit"></i> Edit Patient
+        </a>
+        <a href="{{ url_for('patients') }}" class="btn btn-outline">
+            <i class="fas fa-arrow-left"></i> Back to Patients
+        </a>
+    </div>
+</div>
+
+<div class="patient-profile">
+    <div class="patient-sidebar">
+        <div class="patient-avatar-large">
+            <div class="avatar-circle-large">
+                {{ patient.first_name[0] }}{{ patient.last_name[0] }}
+            </div>
+        </div>
+        <div class="patient-basic-info">
+            <h2>{{ patient.first_name }} {{ patient.last_name }}</h2>
+            <div class="info-item">
+                <i class="fas fa-birthday-cake"></i>
+                <span>{{ patient.age }} years old</span>
+            </div>
+            <div class="info-item">
+                <i class="fas fa-calendar"></i>
+                <span>Born {{ patient.date_of_birth.strftime('%B %d, %Y') }}</span>
+            </div>
+            <div class="info-item">
+                <i class="fas fa-venus-mars"></i>
+                <span>{{ patient.gender }}</span>
+            </div>
+            <div class="admission-stats">
+                <div class="stat-card">
+                    <i class="fas fa-hospital"></i>
+                    <div>
+                        <h3>{{ patient.admission_count }}</h3>
+                        <p>Total Visits</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="patient-main-content">
+        <div class="info-sections">
+            <div class="info-section">
+                <h3><i class="fas fa-address-book"></i> Contact Information</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <label>Phone:</label>
+                        <span>{{ patient.phone or 'Not provided' }}</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Email:</label>
+                        <span>{{ patient.email or 'Not provided' }}</span>
+                    </div>
+                    <div class="info-item full-width">
+                        <label>Address:</label>
+                        <span>{{ patient.address or 'Not provided' }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <h3><i class="fas fa-phone-alt"></i> Emergency Contact</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <label>Contact Name:</label>
+                        <span>{{ patient.emergency_contact or 'Not provided' }}</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Contact Phone:</label>
+                        <span>{{ patient.emergency_phone or 'Not provided' }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <h3><i class="fas fa-calendar-check"></i> Recent Appointments</h3>
+                {% if recent_appointments %}
+                <div class="appointments-list">
+                    {% for appointment in recent_appointments %}
+                    <div class="appointment-item">
+                        <div class="appointment-date">
+                            <i class="fas fa-calendar"></i>
+                            {{ appointment.appointment_date.strftime('%B %d, %Y') }}
+                        </div>
+                        <div class="appointment-details">
+                            <p><strong>Dr. {{ appointment.doctor_ref.first_name }} {{ appointment.doctor_ref.last_name }}</strong></p>
+                            <p>{{ appointment.doctor_ref.specialization_ref.name }}</p>
+                            {% if appointment.diagnosis %}
+                            <p class="diagnosis">{{ appointment.diagnosis }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="appointment-status">
+                            <span class="status-badge status-{{ appointment.status.lower() }}">
+                                {{ appointment.status }}
+                            </span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="no-data">No recent appointments found.</p>
+                {% endif %}
+            </div>
+
+            <div class="info-section">
+                <h3><i class="fas fa-file-medical-alt"></i> Medical Records Summary</h3>
+                {% if recent_records %}
+                <div class="records-summary">
+                    {% for record in recent_records %}
+                    <div class="record-item">
+                        <div class="record-date">
+                            <i class="fas fa-calendar"></i>
+                            {{ record.created_at.strftime('%B %d, %Y') }}
+                        </div>
+                        <div class="record-details">
+                            <p><strong>{{ record.record_type }}</strong></p>
+                            <p>{{ record.diagnosis }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="section-actions">
+                    <a href="{{ url_for('patient_records', patient_id=patient.id) }}" class="btn btn-primary">
+                        <i class="fas fa-eye"></i> View All Records
+                    </a>
+                </div>
+                {% else %}
+                <p class="no-data">No medical records found.</p>
+                <div class="section-actions">
+                    <a href="{{ url_for('add_patient_record', patient_id=patient.id) }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Add First Record
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.patient-profile {
+    display: flex;
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.patient-sidebar {
+    flex: 0 0 300px;
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    height: fit-content;
+}
+
+.patient-avatar-large {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.avatar-circle-large {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #073649, #50a69e);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin: 0 auto;
+    box-shadow: 0 4px 15px rgba(7, 54, 73, 0.3);
+}
+
+.patient-basic-info h2 {
+    text-align: center;
+    color: #073649;
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+}
+
+.patient-basic-info .info-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    color: #666;
+}
+
+.patient-basic-info .info-item i {
+    color: #50a69e;
+    width: 20px;
+}
+
+.admission-stats {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid #e7f7f4;
+}
+
+.stat-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: #e7f7f4;
+    border-radius: 8px;
+}
+
+.stat-card i {
+    font-size: 1.5rem;
+    color: #50a69e;
+}
+
+.stat-card h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: #073649;
+}
+
+.stat-card p {
+    margin: 0;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.patient-main-content {
+    flex: 1;
+}
+
+.info-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.info-section {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.info-section h3 {
+    color: #073649;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.info-section h3 i {
+    color: #50a69e;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.info-grid .full-width {
+    grid-column: 1 / -1;
+}
+
+.info-grid .info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.info-grid .info-item label {
+    font-weight: 600;
+    color: #073649;
+    font-size: 0.9rem;
+}
+
+.info-grid .info-item span {
+    color: #666;
+}
+
+.appointments-list, .records-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.appointment-item, .record-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #50a69e;
+}
+
+.appointment-date, .record-date {
+    flex: 0 0 150px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #073649;
+    font-weight: 600;
+}
+
+.appointment-details, .record-details {
+    flex: 1;
+}
+
+.appointment-details p, .record-details p {
+    margin: 0.25rem 0;
+}
+
+.diagnosis {
+    color: #666;
+    font-style: italic;
+}
+
+.appointment-status {
+    flex: 0 0 100px;
+    text-align: right;
+}
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-scheduled {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.status-completed {
+    background: #e8f5e8;
+    color: #2e7d32;
+}
+
+.status-cancelled {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.no-data {
+    text-align: center;
+    color: #666;
+    font-style: italic;
+    padding: 2rem;
+}
+
+.section-actions {
+    margin-top: 1.5rem;
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .patient-profile {
+        flex-direction: column;
+    }
+    
+    .patient-sidebar {
+        flex: none;
+    }
+    
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .appointment-item, .record-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .appointment-date, .record-date {
+        flex: none;
+    }
+}
+</style>
+{% endblock %}

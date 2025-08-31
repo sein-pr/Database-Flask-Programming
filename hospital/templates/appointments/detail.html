@@ -1,0 +1,310 @@
+{% extends "base.html" %}
+
+{% block title %}Appointment Details - SEIN Hospital Management{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-title">
+        <h1><i class="fas fa-calendar-check"></i> Appointment Details</h1>
+        <p>Complete appointment information</p>
+    </div>
+    <div class="page-actions">
+        <a href="{{ url_for('edit_appointment', appointment_id=appointment.id) }}" class="btn btn-primary">
+            <i class="fas fa-edit"></i> Edit Appointment
+        </a>
+        <a href="{{ url_for('appointments') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Appointments
+        </a>
+    </div>
+</div>
+
+<div class="appointment-detail-container">
+    <div class="appointment-overview">
+        <div class="status-header">
+            <span class="status-badge status-{{ appointment.status }} large">
+                {{ appointment.status.title() }}
+            </span>
+            <div class="appointment-datetime">
+                <div class="date">
+                    <i class="fas fa-calendar"></i>
+                    {{ appointment.appointment_date.strftime('%A, %B %d, %Y') }}
+                </div>
+                <div class="time">
+                    <i class="fas fa-clock"></i>
+                    {{ appointment.appointment_time.strftime('%I:%M %p') }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="appointment-details-grid">
+        <div class="detail-card">
+            <h3><i class="fas fa-user"></i> Patient Information</h3>
+            <div class="patient-avatar">
+                <div class="avatar-circle">
+                    {{ appointment.patient_ref.first_name[0] }}{{ appointment.patient_ref.last_name[0] }}
+                </div>
+            </div>
+            <div class="info-list">
+                <div class="info-item">
+                    <label>Name:</label>
+                    <span>{{ appointment.patient_ref.first_name }} {{ appointment.patient_ref.last_name }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Age:</label>
+                    <span>{{ appointment.patient_ref.age }} years old</span>
+                </div>
+                <div class="info-item">
+                    <label>Gender:</label>
+                    <span>{{ appointment.patient_ref.gender }}</span>
+                </div>
+                {% if appointment.patient_ref.phone %}
+                <div class="info-item">
+                    <label>Phone:</label>
+                    <span>{{ appointment.patient_ref.phone }}</span>
+                </div>
+                {% endif %}
+            </div>
+            <div class="card-actions">
+                <a href="{{ url_for('patient_detail', patient_id=appointment.patient_ref.id) }}" class="btn btn-sm btn-outline">
+                    <i class="fas fa-eye"></i> View Patient
+                </a>
+            </div>
+        </div>
+
+        <div class="detail-card">
+            <h3><i class="fas fa-user-md"></i> Doctor Information</h3>
+            <div class="doctor-avatar">
+                <div class="avatar-circle doctor-avatar-bg">
+                    {{ appointment.doctor_ref.first_name[0] }}{{ appointment.doctor_ref.last_name[0] }}
+                </div>
+            </div>
+            <div class="info-list">
+                <div class="info-item">
+                    <label>Name:</label>
+                    <span>Dr. {{ appointment.doctor_ref.first_name }} {{ appointment.doctor_ref.last_name }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Specialization:</label>
+                    <span>{{ appointment.doctor_ref.specialization_ref.name }}</span>
+                </div>
+                {% if appointment.doctor_ref.phone %}
+                <div class="info-item">
+                    <label>Phone:</label>
+                    <span>{{ appointment.doctor_ref.phone }}</span>
+                </div>
+                {% endif %}
+                {% if appointment.doctor_ref.license_number %}
+                <div class="info-item">
+                    <label>License:</label>
+                    <span>{{ appointment.doctor_ref.license_number }}</span>
+                </div>
+                {% endif %}
+            </div>
+            <div class="card-actions">
+                <a href="{{ url_for('doctor_detail', doctor_id=appointment.doctor_ref.id) }}" class="btn btn-sm btn-outline">
+                    <i class="fas fa-eye"></i> View Doctor
+                </a>
+            </div>
+        </div>
+
+        <div class="detail-card full-width">
+            <h3><i class="fas fa-notes-medical"></i> Medical Information</h3>
+            <div class="medical-info">
+                {% if appointment.diagnosis %}
+                <div class="info-section">
+                    <label>Diagnosis/Reason:</label>
+                    <p>{{ appointment.diagnosis }}</p>
+                </div>
+                {% endif %}
+                {% if appointment.notes %}
+                <div class="info-section">
+                    <label>Notes:</label>
+                    <p>{{ appointment.notes }}</p>
+                </div>
+                {% endif %}
+                {% if not appointment.diagnosis and not appointment.notes %}
+                <p class="no-info">No medical information recorded for this appointment.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="detail-card full-width">
+            <h3><i class="fas fa-info-circle"></i> Appointment History</h3>
+            <div class="history-info">
+                <div class="info-item">
+                    <label>Created:</label>
+                    <span>{{ appointment.created_at.strftime('%B %d, %Y at %I:%M %p') }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Status:</label>
+                    <span class="status-badge status-{{ appointment.status }}">{{ appointment.status.title() }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+.appointment-detail-container {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.appointment-overview {
+    background: white;
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+}
+
+.status-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.status-badge.large {
+    font-size: 1.2rem;
+    padding: 1rem 2rem;
+}
+
+.appointment-datetime {
+    text-align: right;
+}
+
+.appointment-datetime .date {
+    color: var(--primary-color);
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.appointment-datetime .time {
+    color: var(--accent-color);
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+.appointment-details-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+.detail-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.detail-card.full-width {
+    grid-column: 1 / -1;
+}
+
+.detail-card h3 {
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.detail-card h3 i {
+    color: var(--accent-color);
+}
+
+.patient-avatar,
+.doctor-avatar {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.doctor-avatar-bg {
+    background: linear-gradient(135deg, #2c5aa0, var(--accent-color));
+}
+
+.info-list {
+    margin-bottom: 1.5rem;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.info-item label {
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.info-item span {
+    color: #666;
+}
+
+.card-actions {
+    text-align: center;
+}
+
+.medical-info,
+.history-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.info-section {
+    padding: 1rem;
+    background: var(--secondary-color);
+    border-radius: 8px;
+}
+
+.info-section label {
+    font-weight: 600;
+    color: var(--primary-color);
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.info-section p {
+    margin: 0;
+    color: var(--text-dark);
+    line-height: 1.6;
+}
+
+.no-info {
+    text-align: center;
+    color: #666;
+    font-style: italic;
+    padding: 2rem;
+}
+
+@media (max-width: 768px) {
+    .appointment-details-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .status-header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .appointment-datetime {
+        text-align: center;
+    }
+}
+</style>
+{% endblock %}

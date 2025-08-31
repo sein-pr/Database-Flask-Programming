@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Request Access - SEIN Hospital Management{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <div class="form-container">
+        <h2 style="text-align: center; margin-bottom: 2rem; color: var(--primary-color);">Request Access</h2>
+        
+        <form method="POST">
+            <div class="form-group">
+                <label for="first_name">First Name</label>
+                <input type="text" id="first_name" name="first_name" class="form-control" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="last_name">Last Name</label>
+                <input type="text" id="last_name" name="last_name" class="form-control" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="reason">Reason for Access</label>
+                <textarea id="reason" name="reason" class="form-control" rows="4" required></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" name="is_temporary" value="1">
+                    This is a temporary access request
+                </label>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Submit Request</button>
+        </form>
+        
+        <div class="login-links">
+            <p><a href="{{ url_for('login') }}">Back to Login</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

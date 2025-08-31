@@ -1,0 +1,101 @@
+/* ===== General Page Styling ===== */
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background-color: #f4f6f9;
+    color: #222;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+}
+
+/* ===== Navbar ===== */
+.navbar {
+    background: linear-gradient(90deg, #1464f4, #1fb5ff) !important;
+}
+.navbar-brand {
+    font-weight: bold;
+    font-size: 1.3rem;
+}
+.navbar-nav .nav-link {
+    color: #fff !important;
+    transition: color 0.2s ease-in-out;
+}
+.navbar-nav .nav-link:hover {
+    color: #ffe082 !important;
+}
+
+/* ===== Header Section ===== */
+.site-header h1 {
+    margin: 0 0 6px 0;
+    font-size: 2rem;
+    font-weight: bold;
+}
+.lead {
+    margin: 0;
+    opacity: 0.95;
+}
+
+/* ===== Main Content ===== */
+.content {
+    padding: 24px;
+    max-width: 1000px;
+    margin: 20px auto;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+}
+
+/* Section Titles */
+h2 {
+    margin-top: 1rem;
+    font-weight: 600;
+    color: #1464f4;
+}
+
+/* Links */
+a {
+    color: #1464f4;
+    text-decoration: none;
+}
+a:hover {
+    text-decoration: underline;
+}
+
+/* ===== Footer ===== */
+.site-footer {
+    text-align: center;
+    padding: 15px 10px;
+    color: #666;
+    margin-top: 30px;
+    font-size: 0.9rem;
+    background-color: #f1f3f6;
+    border-top: 1px solid #ddd;
+}
+
+/* ===== Buttons ===== */
+.btn-custom {
+    background: linear-gradient(90deg, #1464f4, #1fb5ff);
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    transition: background 0.3s ease-in-out;
+}
+.btn-custom:hover {
+    background: linear-gradient(90deg, #0d47a1, #0288d1);
+}
+
+/* ===== Center Content Utility ===== */
+.center {
+    text-align: center;
+}
+
+/* ===== Cards ===== */
+.card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+}
+.card h5 {
+    font-weight: bold;
+}

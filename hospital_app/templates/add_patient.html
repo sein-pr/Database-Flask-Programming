@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="card">
+        <h2>Register a New Patient</h2>
+        <form method="POST" action="{{ url_for('add_patient') }}">
+            <div class="form-group">
+                <label for="p-fname">First Name</label>
+                <input type="text" id="p-fname" name="first_name" placeholder="Patient's First Name" required>
+            </div>
+            <div class="form-group">
+                <label for="p-lname">Last Name</label>
+                <input type="text" id="p-lname" name="last_name" placeholder="Patient's Last Name" required>
+            </div>
+            <div class="form-group">
+                <!-- Changed from 'age' to 'date_of_birth' and the input type to 'date' -->
+                <label for="p-dob">Date of Birth</label>
+                <input type="date" id="p-dob" name="date_of_birth" required>
+            </div>
+            <div class="form-group">
+                <label for="p-gender">Gender</label>
+                <select id="p-gender" name="gender">
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div class="full-width-form-item">
+                <button type="submit">Register Patient</button>
+                <a href="{{ url_for('index') }}" class="button secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+{% endblock %}

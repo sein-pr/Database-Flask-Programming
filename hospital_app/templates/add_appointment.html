@@ -1,0 +1,253 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="card">
+        <h2>Schedule an Appointment</h2>
+        <form method="POST" action="{{ url_for('add_appointment') }}">
+            <div class="form-group">
+                <label for="appt-patient">Patient</label>
+                <select id="appt-patient" name="patient_id" required>
+                    <option value="" disabled selected>Select Patient</option>
+                    {% for patient in patients %}
+                    <option value="{{ patient.id }}">{{ patient.full_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="appt-doctor">Doctor</label>
+                <select id="appt-doctor" name="doctor_id" required>
+                    <option value="" disabled selected>Select Doctor</option>
+                    {% for doctor in doctors %}
+                    <option value="{{ doctor.id }}">{{ doctor.full_name }} ({{ doctor.specialization }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="appt-date">Date</label>
+                <input type="date" id="appt-date" name="date" required>
+            </div>
+            
+            <!-- New: Time grid container -->
+            <div class="form-group">
+                <label>Select a Time Slot</label>
+                <div id="time-grid" class="time-grid">
+                    <!-- Time slots will be dynamically generated here -->
+                </div>
+                <input type="hidden" id="selected-time-input" name="time" required>
+            </div>
+            
+            <div class="full-width-form-item">
+                <label for="appt-diagnosis">Diagnosis Summary</label>
+                <textarea id="appt-diagnosis" name="diagnosis" rows="4" placeholder="Brief summary of the diagnosis"></textarea>
+            </div>
+            <div class="full-width-form-item">
+                <button type="submit" class="button primary">Book Appointment</button>
+                <a href="{{ url_for('index') }}" class="button secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Modal for showing messages -->
+    <div id="modal-overlay" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h3 id="modal-title"></h3>
+            <p id="modal-message"></p>
+            <button id="modal-ok-button" class="button primary">OK</button>
+        </div>
+    </div>
+
+    <script>
+        // Custom modal function to replace alert() and confirm()
+        function showModal(title, message, onOk) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-message').innerText = message;
+            document.getElementById('modal-overlay').style.display = 'flex';
+            document.getElementById('modal-ok-button').onclick = function() {
+                document.getElementById('modal-overlay').style.display = 'none';
+                if (onOk) onOk();
+            };
+        }
+
+        const dateInput = document.getElementById('appt-date');
+        const doctorSelect = document.getElementById('appt-doctor');
+        const timeGrid = document.getElementById('time-grid');
+        const selectedTimeInput = document.getElementById('selected-time-input');
+
+        const workingHoursStart = 7.5; // 7:30 AM
+        const workingHoursEnd = 17;    // 5:00 PM
+        let bookedTimes = [];
+
+        // Set the minimum date to today to prevent selecting past days
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        dateInput.min = `${yyyy}-${mm}-${dd}`;
+
+        // Function to check if a date is a weekend
+        function isWeekend(date) {
+            const day = new Date(date).getDay();
+            return day === 0 || day === 6; // Sunday is 0, Saturday is 6
+        }
+        
+        // Function to check if a time is within working hours
+        function isWithinWorkingHours(hours, minutes) {
+            const totalHours = hours + minutes / 60;
+            return totalHours >= workingHoursStart && totalHours < workingHoursEnd;
+        }
+
+        // Function to generate the time slots
+        function generateTimeSlots() {
+            timeGrid.innerHTML = ''; // Clear previous slots
+            selectedTimeInput.value = ''; // Reset selected time
+            
+            for (let hour = 7; hour <= 17; hour++) {
+                for (let minute = 0; minute < 60; minute += 30) {
+                    const totalHours = hour + minute / 60;
+                    if (totalHours >= 7.5 && totalHours <= 17) {
+                        const time = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+                        const isBooked = bookedTimes.includes(time);
+                        
+                        const timeSlot = document.createElement('div');
+                        timeSlot.classList.add('time-slot');
+                        timeSlot.textContent = time;
+
+                        if (isBooked) {
+                            timeSlot.classList.add('booked');
+                            timeSlot.disabled = true;
+                        } else {
+                            timeSlot.classList.add('available');
+                            timeSlot.addEventListener('click', () => {
+                                // Remove 'selected' class from all slots
+                                document.querySelectorAll('.time-slot').forEach(slot => {
+                                    slot.classList.remove('selected');
+                                });
+                                // Add 'selected' class to the clicked slot
+                                timeSlot.classList.add('selected');
+                                selectedTimeInput.value = time;
+                            });
+                        }
+                        timeGrid.appendChild(timeSlot);
+                    }
+                }
+            }
+        }
+        
+        // Function to fetch and update booked times and regenerate slots
+        async function fetchBookedTimesAndRender() {
+            const doctorId = doctorSelect.value;
+            const selectedDate = dateInput.value;
+            
+            if (!doctorId || !selectedDate) {
+                bookedTimes = [];
+                generateTimeSlots();
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/get_booked_appointments/${doctorId}/${selectedDate}`);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                bookedTimes = await response.json();
+                generateTimeSlots();
+            } catch (error) {
+                console.error('Error fetching booked appointments:', error);
+                showModal('Error', 'Could not fetch booked times. Please try again.');
+            }
+        }
+
+        // Event listeners for changes
+        dateInput.addEventListener('change', function() {
+            if (isWeekend(this.value)) {
+                showModal('Weekend Selection', 'Appointments are not available on weekends. Please choose a weekday.');
+                this.value = ''; // Reset the date input
+            }
+            fetchBookedTimesAndRender();
+        });
+
+        doctorSelect.addEventListener('change', fetchBookedTimesAndRender);
+        
+        // Initial generation of time slots
+        window.onload = function() {
+            generateTimeSlots();
+        };
+
+    </script>
+
+    <style>
+        /* General styles for the modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 400px;
+        }
+
+        .modal-content h3 {
+            margin-top: 0;
+            color: #333;
+        }
+
+        .modal-content p {
+            color: #666;
+        }
+        
+        .time-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .time-slot {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.3s, border-color 0.3s;
+            background-color: #f0f0f0;
+            color: #333;
+        }
+
+        .time-slot.available {
+            background-color: #fff;
+        }
+
+        .time-slot.available:hover {
+            background-color: #e6f7ff;
+            border-color: #007bff;
+        }
+
+        .time-slot.booked {
+            background-color: #ffcccc;
+            color: #a00;
+            border-color: #ff6666;
+            cursor: not-allowed;
+            text-decoration: line-through;
+        }
+
+        .time-slot.selected {
+            background-color: #007bff;
+            color: #fff;
+            border-color: #0056b3;
+        }
+    </style>
+{% endblock %}

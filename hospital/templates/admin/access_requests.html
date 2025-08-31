@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block title %}Access Requests - SEIN Hospital Management{% endblock %}
+
+{% block content %}
+<div class="admin-header">
+    <h1>Access Requests Management</h1>
+    <p>Review and manage user access requests</p>
+</div>
+
+<div class="admin-tabs">
+    <a href="#pending" class="admin-tab active" onclick="showTab('pending')">
+        Pending ({{ pending_requests|length }})
+    </a>
+    <a href="#approved" class="admin-tab" onclick="showTab('approved')">
+        Approved ({{ approved_requests|length }})
+    </a>
+    <a href="#rejected" class="admin-tab" onclick="showTab('rejected')">
+        Rejected ({{ rejected_requests|length }})
+    </a>
+</div>
+
+<div id="pending-tab" class="tab-content">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Reason</th>
+                <th>Type</th>
+                <th>Requested</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for request in pending_requests %}
+            <tr>
+                <td>{{ request.first_name }} {{ request.last_name }}</td>
+                <td>{{ request.reason }}</td>
+                <td>
+                    <span class="status-badge {% if request.is_temporary %}status-pending{% else %}status-approved{% endif %}">
+                        {% if request.is_temporary %}Temporary{% else %}Permanent{% endif %}
+                    </span>
+                </td>
+                <td>{{ request.requested_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td>
+                    <a href="{{ url_for('approve_request', request_id=request.id) }}" 
+                       class="btn btn-success btn-sm"
+                       onclick="return confirm('Approve this access request?')">
+                        <i class="fas fa-check"></i> Approve
+                    </a>
+                    <a href="{{ url_for('reject_request', request_id=request.id) }}" 
+                       class="btn btn-danger btn-sm"
+                       onclick="return confirm('Reject this access request?')">
+                        <i class="fas fa-times"></i> Reject
+                    </a>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" style="text-align: center; color: #666;">No pending requests</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div id="approved-tab" class="tab-content" style="display: none;">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Reason</th>
+                <th>Type</th>
+                <th>Requested</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for request in approved_requests %}
+            <tr>
+                <td>{{ request.first_name }} {{ request.last_name }}</td>
+                <td>{{ request.reason }}</td>
+                <td>
+                    <span class="status-badge {% if request.is_temporary %}status-pending{% else %}status-approved{% endif %}">
+                        {% if request.is_temporary %}Temporary{% else %}Permanent{% endif %}
+                    </span>
+                </td>
+                <td>{{ request.requested_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td><span class="status-badge status-approved">Approved</span></td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" style="text-align: center; color: #666;">No approved requests</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div id="rejected-tab" class="tab-content" style="display: none;">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Reason</th>
+                <th>Type</th>
+                <th>Requested</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for request in rejected_requests %}
+            <tr>
+                <td>{{ request.first_name }} {{ request.last_name }}</td>
+                <td>{{ request.reason }}</td>
+                <td>
+                    <span class="status-badge {% if request.is_temporary %}status-pending{% else %}status-approved{% endif %}">
+                        {% if request.is_temporary %}Temporary{% else %}Permanent{% endif %}
+                    </span>
+                </td>
+                <td>{{ request.requested_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td><span class="status-badge status-rejected">Rejected</span></td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" style="text-align: center; color: #666;">No rejected requests</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function showTab(tabName) {
+    // Hide all tab contents
+    const tabContents = document.querySelectorAll('.tab-content');
+    tabContents.forEach(tab => tab.style.display = 'none');
+    
+    // Remove active class from all tabs
+    const tabs = document.querySelectorAll('.admin-tab');
+    tabs.forEach(tab => tab.classList.remove('active'));
+    
+    // Show selected tab content
+    document.getElementById(tabName + '-tab').style.display = 'block';
+    
+    // Add active class to clicked tab
+    event.target.classList.add('active');
+}
+</script>
+
+<style>
+.admin-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.admin-header h1 {
+    color: var(--primary-color);
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.tab-content {
+    background: white;
+    border-radius: 0 0 10px 10px;
+}
+</style>
+{% endblock %}
