@@ -711,7 +711,8 @@ def add_appointment():
                 flash('This time slot is already booked for the selected doctor.', 'error')
                 doctors = Doctor.query.all()
                 patients = Patient.query.all()
-                return render_template('appointments/add.html', doctors=doctors, patients=patients)
+                min_date = (date.today() + timedelta(days=1)).strftime('%Y-%m-%d')
+                return render_template('appointments/add.html', doctors=doctors, patients=patients, min_date=min_date)
             
             appointment = Appointment(
                 patient_id=request.form['patient_id'],
@@ -737,7 +738,8 @@ def add_appointment():
     
     doctors = Doctor.query.all()
     patients = Patient.query.all()
-    return render_template('appointments/add.html', doctors=doctors, patients=patients)
+    min_date = (date.today() + timedelta(days=1)).strftime('%Y-%m-%d')
+    return render_template('appointments/add.html', doctors=doctors, patients=patients, min_date=min_date)
 
 @app.route('/appointments/<int:appointment_id>')
 def appointment_detail(appointment_id):
@@ -992,7 +994,7 @@ def add_medical_record(patient_id):
             flash('Error adding medical record. Please try again.', 'error')
             db.session.rollback()
     
-    return render_template('patients/add_record.html', patient=patient)
+    return render_template('patients/add_record.html', patient=patient, date=date)
 
 @app.route('/patients/<int:patient_id>/records/<int:record_id>/edit', methods=['GET', 'POST'])
 def edit_medical_record(patient_id, record_id):

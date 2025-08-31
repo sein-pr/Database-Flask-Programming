@@ -31,9 +31,7 @@
                     <select id="doctor_id" name="doctor_id" class="form-control" required>
                         <option value="">Select Doctor</option>
                         {% for doctor in doctors %}
-                        <option value="{{ doctor.id }}">
-                            Dr. {{ doctor.first_name }} {{ doctor.last_name }} - {{ doctor.specialization_ref.name }}
-                        </option>
+                        <option value="{{ doctor.id }}">{{ doctor.first_name }} {{ doctor.last_name }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -41,46 +39,33 @@
         </div>
 
         <div class="form-section">
-            <h3><i class="fas fa-calendar-alt"></i> Date & Time Selection</h3>
+            <h3><i class="fas fa-clock"></i> Date & Time</h3>
             <div class="form-row">
                 <div class="form-group">
                     <label for="appointment_date">Appointment Date *</label>
-                    <input type="date" id="appointment_date" name="appointment_date" class="form-control" 
-                           min="{{ (datetime.now() + timedelta(days=1)).strftime('%Y-%m-%d') }}" required>
+                    <input type="date" id="appointment_date" name="appointment_date" class="form-control" required>
                 </div>
                 <div class="form-group">
-                    <label for="appointment_time">Appointment Time *</label>
+                    <label for="appointment_time">Time Slot *</label>
                     <select id="appointment_time" name="appointment_time" class="form-control" required disabled>
-                        <option value="">Select date and doctor first</option>
+                        <option value="">Select a doctor and date first</option>
                     </select>
+                    <div id="availability-info" class="mt-2 text-sm"></div>
                 </div>
             </div>
-            <div class="availability-info" id="availabilityInfo" style="display: none;">
-                <p><i class="fas fa-info-circle"></i> Available time slots will appear after selecting a doctor and date.</p>
-            </div>
         </div>
-
+        
         <div class="form-section">
-            <h3><i class="fas fa-notes-medical"></i> Additional Information</h3>
+            <h3><i class="fas fa-info-circle"></i> Reason for Visit</h3>
             <div class="form-group">
-                <label for="diagnosis">Initial Diagnosis/Reason</label>
-                <input type="text" id="diagnosis" name="diagnosis" class="form-control" 
-                       placeholder="e.g., Regular checkup, Follow-up visit, Consultation">
-            </div>
-            <div class="form-group">
-                <label for="notes">Notes</label>
-                <textarea id="notes" name="notes" class="form-control" rows="3" 
-                          placeholder="Any additional notes or special instructions"></textarea>
+                <label for="reason">Reason for Appointment</label>
+                <textarea id="reason" name="reason" class="form-control" rows="3"></textarea>
             </div>
         </div>
 
-        <div class="form-actions">
-            <button type="submit" class="btn btn-primary">
-                <i class="fas fa-save"></i> Schedule Appointment
-            </button>
-            <a href="{{ url_for('appointments') }}" class="btn btn-secondary">
-                <i class="fas fa-times"></i> Cancel
-            </a>
+        <div class="form-actions text-center">
+            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Appointment</button>
+            <a href="{{ url_for('appointments') }}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Cancel</a>
         </div>
     </form>
 </div>
@@ -163,32 +148,38 @@ document.addEventListener('DOMContentLoaded', function() {
     const doctorSelect = document.getElementById('doctor_id');
     const dateInput = document.getElementById('appointment_date');
     const timeSelect = document.getElementById('appointment_time');
-    const availabilityInfo = document.getElementById('availabilityInfo');
+    const availabilityInfo = document.getElementById('availability-info');
 
+    // Function to fetch and update available times
     function updateAvailableTimes() {
         const doctorId = doctorSelect.value;
         const selectedDate = dateInput.value;
 
         if (!doctorId || !selectedDate) {
+            timeSelect.innerHTML = '<option value="">Select a doctor and date first</option>';
             timeSelect.disabled = true;
-            timeSelect.innerHTML = '<option value="">Select doctor and date first</option>';
-            availabilityInfo.style.display = 'none';
+            availabilityInfo.innerHTML = '';
             return;
         }
 
-        // Show loading
+        availabilityInfo.innerHTML = `<p><i class="fas fa-spinner fa-spin"></i> Checking availability...</p>`;
         timeSelect.disabled = true;
-        timeSelect.innerHTML = '<option value="">Loading available times...</option>';
-        availabilityInfo.style.display = 'block';
 
-        // Fetch available times
         fetch(`/api/doctor-availability/${doctorId}?date=${selectedDate}`)
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
             .then(data => {
                 timeSelect.innerHTML = '';
-                
                 if (data.available_times && data.available_times.length > 0) {
-                    timeSelect.innerHTML = '<option value="">Select time</option>';
+                    const defaultOption = document.createElement('option');
+                    defaultOption.value = '';
+                    defaultOption.textContent = 'Select Time Slot';
+                    timeSelect.appendChild(defaultOption);
+                    
                     data.available_times.forEach(slot => {
                         const option = document.createElement('option');
                         option.value = slot.time;
