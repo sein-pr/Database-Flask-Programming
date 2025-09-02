@@ -241,5 +241,23 @@ document.addEventListener('DOMContentLoaded', function() {
     doctorSelect.addEventListener('change', updateAvailableTimes);
     dateInput.addEventListener('change', updateAvailableTimes);
 });
+
+document.addEventListener('DOMContentLoaded', function() {
+  // Get the date input element
+  const dateInput = document.getElementById('appointment_date');
+
+  // Get the current date
+  const today = new Date();
+
+  // Format the date to YYYY-MM-DD
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed, so add 1
+  const day = String(today.getDate()).padStart(2, '0');
+
+  const currentDate = `${year}-${month}-${day}`;
+
+  // Set the min attribute of the date input to the current date
+  dateInput.setAttribute('min', currentDate);
+});
 </script>
 {% endblock %}

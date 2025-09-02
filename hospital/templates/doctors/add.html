@@ -41,8 +41,10 @@
                 <div class="form-group">
                     <label for="license_number">Medical License Number</label>
                     <input type="text" id="license_number" name="license_number" class="form-control" 
-                           placeholder="e.g., MD123456">
+                        placeholder="e.g., MD123456">
+                    <small id="licenseHelp" class="form-text text-muted"></small>
                 </div>
+
             </div>
         </div>
 
@@ -51,7 +53,22 @@
             <div class="form-row">
                 <div class="form-group">
                     <label for="phone">Phone Number</label>
-                    <input type="tel" id="phone" name="phone" class="form-control" placeholder="+1 (555) 123-4567">
+                    <div class="phone-input-group">
+                        <select id="phone_code" name="phone_code" class="form-control phone-code">
+                            <option value="+264">+264 (Namibia)</option>
+                            <option value="+27">+27 (South Africa)</option>
+                            <option value="+267">+267 (Botswana)</option>
+                            <option value="+260">+260 (Zambia)</option>
+                            <option value="+263">+263 (Zimbabwe)</option>
+                            <option value="+1">+1 (USA/Canada)</option>
+                            <option value="+44">+44 (UK)</option>
+                            <option value="+49">+49 (Germany)</option>
+                            <option value="+33">+33 (France)</option>
+                        </select>
+                        <input type="tel" id="phone_number" name="phone_number" class="form-control phone-number" placeholder="81 123 4567">
+                        <span id="phoneError" style="color: red;"></span>
+                        <input type="hidden" id="phone" name="phone">
+                    </div>
                 </div>
                 <div class="form-group">
                     <label for="email">Email Address</label>
@@ -121,6 +138,19 @@
     border-top: 1px solid var(--border-color);
 }
 
+.phone-input-group {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.phone-code {
+    flex: 0 0 140px;
+}
+
+.phone-number {
+    flex: 1;
+}
+
 @media (max-width: 768px) {
     .form-row {
         grid-template-columns: 1fr;
@@ -129,6 +159,104 @@
     .form-actions {
         flex-direction: column;
     }
+    
+    .phone-input-group {
+        flex-direction: column;
+    }
+    
+    .phone-code {
+        flex: none;
+    }
 }
 </style>
+
+<script>
+// Combine phone fields
+function combinePhoneFields() {
+    const phoneCode = document.getElementById('phone_code').value;
+    const phoneNumber = document.getElementById('phone_number').value.trim();
+    
+    if (phoneNumber) {
+        document.getElementById('phone').value = phoneCode + ' ' + phoneNumber;
+    } else {
+        document.getElementById('phone').value = '';
+    }
+}
+
+// Add event listeners to phone fields
+document.addEventListener('DOMContentLoaded', function() {
+    const phoneFields = ['phone_code', 'phone_number'];
+    phoneFields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            field.addEventListener('input', combinePhoneFields);
+            field.addEventListener('change', combinePhoneFields);
+            field.addEventListener('blur', combinePhoneFields);
+        }
+    });
+});
+
+// Ensure phone is combined before form submission
+document.querySelector('.doctor-form').addEventListener('submit', function(e) {
+    combinePhoneFields();
+});
+
+const phoneInput = document.getElementById('phone_number');
+    const phoneError = document.getElementById('phoneError');
+    const minLength = 7; // Example minimum length
+    const maxLength = 13; // Example maximum length
+
+    // Add a 'blur' event listener to the input field
+    phoneInput.addEventListener('blur', function() {
+        const phoneNumber = phoneInput.value;
+
+        if (phoneNumber.length > 0) { // Only validate if the user entered something
+            if (phoneNumber.length < minLength) {
+                phoneError.textContent = 'Invalid phone number: too short.';
+            } else if (phoneNumber.length > maxLength) {
+                phoneError.textContent = 'Invalid phone number: too long.';
+            } else {
+                phoneError.textContent = ''; // Clear error message
+            }
+        } else {
+            phoneError.textContent = ''; // Clear error if the field is empty
+        }
+    });
+
+        const licenseInput = document.getElementById('license_number');
+        const licenseHelp = document.getElementById('licenseHelp');
+        const minLengthMD = 4;
+        const maxLengthMD = 10;
+
+        licenseInput.addEventListener('input', function() {
+        let value = this.value;
+        const sanitizedValue = value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+
+        // 1. Check for 'MD' prefix and add/correct it
+        if (!sanitizedValue.startsWith('MD')) {
+            this.value = 'MD' + sanitizedValue.replace(/^MD/i, '').slice(0, 12);
+        } else {
+            this.value = sanitizedValue.slice(0, 14);
+        }
+
+        // 2. Validate the format (only 'MD' and numbers)
+        const formatRegex = /^MD[0-9]{0,}$/;
+        if (!formatRegex.test(this.value)) {
+            this.value = this.value.replace(/[^MD0-9]/g, '');
+        }
+
+        // 3. Provide immediate feedback on length
+        const numberPart = this.value.substring(2);
+        if (numberPart.length < minLengthMD && numberPart.length > 0) {
+            licenseHelp.textContent = `Number is too short. It must be at least ${minLengthMD} digits.`;
+            licenseHelp.style.color = 'red';
+        } else if (numberPart.length > maxLengthMD) {
+            licenseHelp.textContent = `Number is too long. It must be at most ${maxLengthMD} digits.`;
+            licenseHelp.style.color = 'red';
+        } else {
+            licenseHelp.textContent = 'Correct format: MD + 4 to 10 digits.';
+            licenseHelp.style.color = 'green';
+        }
+    });
+</script>
 {% endblock %}

@@ -50,8 +50,22 @@
             <div class="form-row">
                 <div class="form-group">
                     <label for="phone">Phone Number</label>
-                    <input type="tel" id="phone" name="phone" class="form-control" 
-                           value="{{ patient.phone or '' }}" placeholder="+1 (555) 123-4567">
+                    <div class="phone-input-group">
+                        <select id="phone_code" name="phone_code" class="form-control phone-code">
+                            <option value="+264">+264 (Namibia)</option>
+                            <option value="+27">+27 (South Africa)</option>
+                            <option value="+267">+267 (Botswana)</option>
+                            <option value="+260">+260 (Zambia)</option>
+                            <option value="+263">+263 (Zimbabwe)</option>
+                            <option value="+1">+1 (USA/Canada)</option>
+                            <option value="+44">+44 (UK)</option>
+                            <option value="+49">+49 (Germany)</option>
+                            <option value="+33">+33 (France)</option>
+                        </select>
+                        <input type="tel" id="phone_number" name="phone_number" class="form-control phone-number" placeholder="81 123 4567">
+                        <span class="phoneError" id="phoneError" style="color: red;"></span>
+                        <input type="hidden" id="phone" name="phone" value="{{ patient.phone or '' }}">
+                    </div>
                 </div>
                 <div class="form-group">
                     <label for="email">Email Address</label>
@@ -60,10 +74,30 @@
                 </div>
             </div>
             
-            <div class="form-group">
-                <label for="address">Address</label>
-                <textarea id="address" name="address" class="form-control" rows="3" 
-                          placeholder="Full address including city, state, and zip code">{{ patient.address or '' }}</textarea>
+            <div class="form-section">
+                <h4><i class="fas fa-map-marker-alt"></i> Address</h4>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="street">Street Address</label>
+                        <input type="text" id="street" name="street" class="form-control address-field" placeholder="123 Main Street">
+                    </div>
+                    <div class="form-group">
+                        <label for="city">City</label>
+                        <input type="text" id="city" name="city" class="form-control address-field" placeholder="Windhoek">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="state">State/Region</label>
+                        <input type="text" id="state" name="state" class="form-control address-field" placeholder="Khomas">
+                    </div>
+                    <div class="form-group">
+                        <label for="zip_code">Zip Code</label>
+                        <input type="text" id="zip_code" name="zip_code" class="form-control address-field" placeholder="10001">
+                    </div>
+                </div>
+                <!-- Hidden field that will contain the combined address -->
+                <input type="hidden" id="address" name="address" value="{{ patient.address or '' }}">
             </div>
         </div>
 
@@ -71,14 +105,28 @@
             <h3><i class="fas fa-phone-alt"></i> Emergency Contact</h3>
             <div class="form-row">
                 <div class="form-group">
-                    <label for="emergency_contact">Emergency Contact Name</label>
+                    <label for="emergency_contact">Emergency Contact First Name</label>
                     <input type="text" id="emergency_contact" name="emergency_contact" class="form-control" 
                            value="{{ patient.emergency_contact or '' }}" placeholder="Full name of emergency contact">
                 </div>
                 <div class="form-group">
                     <label for="emergency_phone">Emergency Contact Phone</label>
-                    <input type="tel" id="emergency_phone" name="emergency_phone" class="form-control" 
-                           value="{{ patient.emergency_phone or '' }}" placeholder="+1 (555) 123-4567">
+                    <div class="phone-input-group">
+                        <select id="emergency_phone_code" name="emergency_phone_code" class="form-control phone-code">
+                            <option value="+264">+264 (Namibia)</option>
+                            <option value="+27">+27 (South Africa)</option>
+                            <option value="+267">+267 (Botswana)</option>
+                            <option value="+260">+260 (Zambia)</option>
+                            <option value="+263">+263 (Zimbabwe)</option>
+                            <option value="+1">+1 (USA/Canada)</option>
+                            <option value="+44">+44 (UK)</option>
+                            <option value="+49">+49 (Germany)</option>
+                            <option value="+33">+33 (France)</option>
+                        </select>
+                        <input type="tel" id="emergency_phone_number" name="emergency_phone_number" class="form-control phone-number" placeholder="81 123 4567">
+                        <span class="emerError" id="emerError" style="color: red;"></span>
+                        <input type="hidden" id="emergency_phone" name="emergency_phone" value="{{ patient.emergency_phone or '' }}">
+                    </div>
                 </div>
             </div>
         </div>
@@ -117,7 +165,7 @@
     margin-bottom: 0;
 }
 
-.form-section h3 {
+.form-section h3, .form-section h4 {
     color: var(--primary-color);
     margin-bottom: 1.5rem;
     display: flex;
@@ -125,7 +173,7 @@
     gap: 0.5rem;
 }
 
-.form-section h3 i {
+.form-section h3 i, .form-section h4 i {
     color: var(--accent-color);
 }
 
@@ -144,6 +192,19 @@
     border-top: 1px solid var(--border-color);
 }
 
+.phone-input-group {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.phone-code {
+    flex: 0 0 140px;
+}
+
+.phone-number {
+    flex: 1;
+}
+
 @media (max-width: 768px) {
     .form-row {
         grid-template-columns: 1fr;
@@ -152,6 +213,164 @@
     .form-actions {
         flex-direction: column;
     }
+    
+    .phone-input-group {
+        flex-direction: column;
+    }
+    
+    .phone-code {
+        flex: none;
+    }
 }
 </style>
+
+<script>
+// Parse existing address into separate fields on page load
+function parseExistingAddress() {
+    const existingAddress = document.getElementById('address').value;
+    if (existingAddress) {
+        const parts = existingAddress.split(', ');
+        if (parts.length >= 1) document.getElementById('street').value = parts[0] || '';
+        if (parts.length >= 2) document.getElementById('city').value = parts[1] || '';
+        if (parts.length >= 3) document.getElementById('state').value = parts[2] || '';
+        if (parts.length >= 4) document.getElementById('zip_code').value = parts[3] || '';
+    }
+}
+
+// Combine address fields into one string
+function combineAddressFields() {
+    const street = document.getElementById('street').value.trim();
+    const city = document.getElementById('city').value.trim();
+    const state = document.getElementById('state').value.trim();
+    const zipCode = document.getElementById('zip_code').value.trim();
+    
+    const addressParts = [street, city, state, zipCode].filter(part => part !== '');
+    const combinedAddress = addressParts.join(', ');
+    
+    document.getElementById('address').value = combinedAddress;
+}
+
+// Parse existing phone numbers
+function parseExistingPhone() {
+    const existingPhone = document.getElementById('phone').value;
+    const existingEmergencyPhone = document.getElementById('emergency_phone').value;
+    
+    if (existingPhone) {
+        const phoneMatch = existingPhone.match(/^(\+\d+)\s*(.+)$/);
+        if (phoneMatch) {
+            const code = phoneMatch[1];
+            const number = phoneMatch[2];
+            document.getElementById('phone_code').value = code;
+            document.getElementById('phone_number').value = number;
+        }
+    }
+    
+    if (existingEmergencyPhone) {
+        const phoneMatch = existingEmergencyPhone.match(/^(\+\d+)\s*(.+)$/);
+        if (phoneMatch) {
+            const code = phoneMatch[1];
+            const number = phoneMatch[2];
+            document.getElementById('emergency_phone_code').value = code;
+            document.getElementById('emergency_phone_number').value = number;
+        }
+    }
+}
+
+// Combine phone fields
+function combinePhoneFields() {
+    const phoneCode = document.getElementById('phone_code').value;
+    const phoneNumber = document.getElementById('phone_number').value.trim();
+    const emergencyPhoneCode = document.getElementById('emergency_phone_code').value;
+    const emergencyPhoneNumber = document.getElementById('emergency_phone_number').value.trim();
+    
+    if (phoneNumber) {
+        document.getElementById('phone').value = phoneCode + ' ' + phoneNumber;
+    } else {
+        document.getElementById('phone').value = '';
+    }
+    
+    if (emergencyPhoneNumber) {
+        document.getElementById('emergency_phone').value = emergencyPhoneCode + ' ' + emergencyPhoneNumber;
+    } else {
+        document.getElementById('emergency_phone').value = '';
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    parseExistingAddress();
+    parseExistingPhone();
+    
+    const addressFields = document.querySelectorAll('.address-field');
+    addressFields.forEach(field => {
+        field.addEventListener('input', combineAddressFields);
+        field.addEventListener('blur', combineAddressFields);
+    });
+    
+    const phoneFields = ['phone_code', 'phone_number', 'emergency_phone_code', 'emergency_phone_number'];
+    phoneFields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            field.addEventListener('input', combinePhoneFields);
+            field.addEventListener('change', combinePhoneFields);
+            field.addEventListener('blur', combinePhoneFields);
+        }
+    });
+});
+
+// Ensure all fields are combined before form submission
+document.querySelector('.patient-form').addEventListener('submit', function(e) {
+    combineAddressFields();
+    combinePhoneFields();
+});
+
+const today = new Date();
+const year = today.getFullYear();
+const month = String(today.getMonth() + 1).padStart(2, '0');
+const day = String(today.getDate()).padStart(2, '0');
+
+const todayString = `${year}-${month}-${day}`;
+document.getElementById('date_of_birth').setAttribute('max', todayString);
+
+    const phoneInput = document.getElementById('phone_number');
+    const phoneError = document.getElementById('phoneError');
+    const minLength = 7; // Example minimum length
+    const maxLength = 13; // Example maximum length
+
+    // Add a 'blur' event listener to the input field
+    phoneInput.addEventListener('blur', function() {
+        const phoneNumber = phoneInput.value;
+
+        if (phoneNumber.length > 0) { // Only validate if the user entered something
+            if (phoneNumber.length < minLength) {
+                phoneError.textContent = 'Invalid phone number: too short.';
+            } else if (phoneNumber.length > maxLength) {
+                phoneError.textContent = 'Invalid phone number: too long.';
+            } else {
+                phoneError.textContent = ''; // Clear error message
+            }
+        } else {
+            phoneError.textContent = ''; // Clear error if the field is empty
+        }
+    });
+
+    const emerInput = document.getElementById('emergency_phone_number');
+    const emerError = document.getElementById('emerError');
+    // Add a 'blur' event listener to the input field
+    emerInput.addEventListener('blur', function() {
+        const emerNumber = emerInput.value;
+
+        if (emerNumber.length > 0) { // Only validate if the user entered something
+            if (emerNumber.length < minLength) {
+                emerError.textContent = 'Invalid phone number: too short.';
+            } else if (emerNumber.length > maxLength) {
+                emerError.textContent = 'Invalid phone number: too long.';
+            } else {
+                emerError.textContent = ''; // Clear error message
+            }
+        } else {
+            emerError.textContent = ''; // Clear error if the field is empty
+        }
+    });
+</script>
 {% endblock %}

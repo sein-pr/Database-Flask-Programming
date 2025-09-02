@@ -12,11 +12,19 @@
     <header class="header">
         <div class="header-content">
             <div class="logo">
-                <i class="fas fa-hospital-alt"></i>
+                <i class="fas fa-hands"></i>
                 <span>SEIN Hospital Management</span>
             </div>
             
-            <nav class="nav-links">
+            <!-- Added mobile menu toggle button -->
+            <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            
+            <!-- Added mobile-nav class to navigation for responsive styling -->
+            <nav class="nav-links mobile-nav" id="mobileNav">
                 <a href="{{ url_for('dashboard') }}" class="nav-link">Dashboard</a>
                 <a href="{{ url_for('patients') }}" class="nav-link">Patients</a>
                 <a href="{{ url_for('doctors') }}" class="nav-link">Doctors</a>
@@ -31,9 +39,25 @@
                     </div>
                 </div>
                 {% endif %}
+                
+                <!-- Moved user profile inside mobile nav for mobile display -->
+                <div class="user-profile mobile-user-profile">
+                    <div class="profile-avatar">
+                        {{ session.first_name[0] }}{{ session.last_name[0] }}
+                    </div>
+                    <div class="profile-dropdown">
+                        <span>{{ session.first_name }} {{ session.last_name }}</span>
+                        <div class="dropdown-content">
+                            <a href="#"><i class="fas fa-user"></i> Profile</a>
+                            <a href="#"><i class="fas fa-cog"></i> Settings</a>
+                            <a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                        </div>
+                    </div>
+                </div>
             </nav>
             
-            <div class="user-profile">
+            <!-- Desktop user profile (hidden on mobile) -->
+            <div class="user-profile desktop-user-profile">
                 <div class="profile-avatar">
                     {{ session.first_name[0] }}{{ session.last_name[0] }}
                 </div>

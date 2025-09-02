@@ -1,0 +1,157 @@
+
+
+MEDICAL HISTORY
+---------------
+Chief Complaint: Chest pain and shortness of breath for 2 days
+History of Present Illness: 45-year-old patient presents with acute onset of substernal chest pain that began 2 days ago. Pain is described as crushing, 8/10 severity, radiating to left arm. Associated with shortness of breath, diaphoresis, and nausea. Pain worsens with exertion and improves with rest.
+
+Past Medical History:
+- Previous Surgeries: Appendectomy (2010), Cholecystectomy (2018)
+- Chronic Conditions: Hypertension (diagnosed 2015), Type 2 Diabetes Mellitus (diagnosed 2017), Hyperlipidemia
+- Previous Hospitalizations: Pneumonia (March 2023), Diabetic ketoacidosis (June 2022)
+
+Family History:
+- Father: Myocardial infarction at age 52, deceased
+- Mother: Breast cancer, alive
+- Siblings: Brother with hypertension and diabetes
+
+Social History:
+- Smoking: Former smoker, 20 pack-years, quit 5 years ago
+- Alcohol: Social drinking, 2-3 drinks per week
+- Drug Use: Denies illicit drug use
+- Occupation: Office manager, sedentary lifestyle
+
+ALLERGIES
+---------
+Drug Allergies: Penicillin (rash), Sulfa drugs (hives and swelling)
+Food Allergies: Shellfish (anaphylaxis), Tree nuts (throat swelling)
+Environmental Allergies: Seasonal pollen, dust mites
+
+CURRENT MEDICATIONS
+-------------------
+1. Lisinopril 10mg - Once daily - Oral (for hypertension)
+2. Metformin 1000mg - Twice daily - Oral (for diabetes)
+3. Atorvastatin 40mg - Once daily at bedtime - Oral (for hyperlipidemia)
+4. Aspirin 81mg - Once daily - Oral (cardioprotective)
+5. Metoprolol 50mg - Twice daily - Oral (for hypertension)
+
+VITAL SIGNS
+-----------
+Date/Time: 09/15/2025 14:30
+Temperature: 98.6°F (37.0°C)
+Blood Pressure: 165/95 mmHg
+Heart Rate: 102 BPM
+Respiratory Rate: 22 breaths per minute
+Oxygen Saturation: 94% on room air
+Height: 5'8" (173 cm)
+Weight: 185 lbs (84 kg)
+BMI: 28.1 (overweight)
+
+PHYSICAL EXAMINATION
+--------------------
+General Appearance: Alert, oriented x3, appears anxious and in mild distress
+Head/Neck: Normocephalic, atraumatic, no lymphadenopathy, JVD present
+Cardiovascular: Tachycardic, regular rhythm, S3 gallop present, no murmurs
+Respiratory: Bilateral fine crackles at lung bases, mild dyspnea
+Abdomen: Soft, non-tender, non-distended, normal bowel sounds
+Extremities: No pedal edema, distal pulses palpable, no cyanosis
+Neurological: Alert and oriented, cranial nerves II-XII intact, normal reflexes
+Skin: Diaphoretic, warm, no rashes or lesions
+
+DIAGNOSTIC TESTS
+----------------
+Laboratory Results:
+- CBC: WBC 8.2, Hgb 13.5, Hct 40.2, Platelets 245
+- BMP: Na 138, K 4.1, Cl 102, CO2 24, BUN 18, Creatinine 1.1, Glucose 165
+- Lipid Panel: Total cholesterol 220, LDL 145, HDL 38, Triglycerides 185
+- HbA1c: 8.2% (elevated)
+- Troponin I: 2.5 ng/mL (elevated)
+- BNP: 450 pg/mL (elevated)
+
+Imaging Studies:
+- Chest X-Ray: Mild pulmonary edema, cardiomegaly
+- CT Angiography: 70% stenosis of LAD, 50% stenosis of RCA
+- Echocardiogram: EF 45%, mild LV dysfunction, no wall motion abnormalities
+
+Other Tests:
+- EKG: ST depression in leads V4-V6, T-wave inversions in leads II, III, aVF
+- Stress Test: Positive for ischemia in inferior and lateral walls
+
+ASSESSMENT & DIAGNOSIS
+----------------------
+Primary Diagnosis: I21.9 - Acute ST-elevation myocardial infarction, unspecified
+Secondary Diagnoses:
+1. I25.10 - Atherosclerotic heart disease of native coronary artery without angina pectoris
+2. E11.9 - Type 2 diabetes mellitus without complications
+3. I10 - Essential hypertension
+4. E78.5 - Hyperlipidemia, unspecified
+
+Clinical Assessment: Patient presents with acute coronary syndrome with elevated cardiac enzymes and EKG changes consistent with NSTEMI. Underlying coronary artery disease with significant stenosis requiring intervention.
+
+TREATMENT PLAN
+--------------
+Medications Prescribed:
+1. Clopidogrel 75mg - Once daily - 12 months duration
+2. Atorvastatin 80mg - Once daily at bedtime - Indefinite
+3. Metoprolol XL 100mg - Once daily - Indefinite
+4. Lisinopril 20mg - Once daily - Indefinite
+
+Procedures Performed:
+- Cardiac catheterization with PCI and stent placement to LAD (09/15/2025)
+- Continuous cardiac monitoring initiated
+
+Referrals:
+- Cardiology - Follow-up in 1 week for post-PCI care
+- Endocrinology - Diabetes management optimization
+- Cardiac Rehabilitation - Exercise and lifestyle program
+
+Patient Education:
+- Heart attack warning signs and when to seek emergency care
+- Importance of medication compliance, especially dual antiplatelet therapy
+- Dietary modifications: low sodium, diabetic diet
+- Smoking cessation reinforcement and resources provided
+- Activity restrictions: no heavy lifting >10 lbs for 1 week
+
+Follow-up Instructions:
+- Return to cardiology clinic in 1 week
+- Schedule echocardiogram in 3 months to assess LV function
+- Contact cardiology immediately if chest pain, shortness of breath, or palpitations occur
+- Primary care follow-up in 2 weeks for diabetes and hypertension management
+
+PROVIDER INFORMATION
+--------------------
+Attending Physician: Dr. Sarah Johnson, MD
+Department: Cardiology
+Date of Service: 09/15/2025
+Time of Service: 14:30
+Signature: [Electronic signature - Dr. S. Johnson]
+License Number: MD12345678
+
+NOTES
+-----
+Progress Notes:
+09/15/2025 15:45 - Dr. Johnson - Patient stable post-PCI. Stent deployed successfully to LAD with TIMI 3 flow restored. No complications during procedure.
+09/16/2025 08:00 - Dr. Johnson - Patient reports significant improvement in chest pain. Ambulating without difficulty. Discharge planning initiated.
+
+Nursing Notes:
+09/15/2025 16:00 - RN Smith - Patient resting comfortably, vital signs stable. Groin site intact without bleeding or hematoma.
+09/16/2025 06:00 - RN Davis - Patient slept well, no complaints of chest pain overnight. Taking oral medications without difficulty.
+
+Discharge Summary:
+- Admission Date: 09/15/2025
+- Discharge Date: 09/16/2025
+- Length of Stay: 2 days
+- Discharge Condition: Stable, chest pain resolved
+- Discharge Instructions: Take all medications as prescribed, follow up with cardiology in 1 week, call 911 for any chest pain
+- Follow-up Appointments: Cardiology (09/23/2025), Primary Care (09/30/2025)
+
+QUALITY MEASURES
+----------------
+Patient Satisfaction Score: 9/10 (excellent care rating)
+Readmission Risk: Medium (due to diabetes and multiple comorbidities)
+Care Coordination: Excellent communication between cardiology, nursing, and pharmacy teams
+
+---
+END OF MEDICAL RECORD
+Record Created: 09/15/2025 14:30
+Last Updated: 09/16/2025 10:15

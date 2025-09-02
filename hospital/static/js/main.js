@@ -11,13 +11,40 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 5000)
   })
 
-  // Mobile menu toggle
   const mobileMenuToggle = document.querySelector(".mobile-menu-toggle")
   const navLinks = document.querySelector(".nav-links")
 
-  if (mobileMenuToggle) {
-    mobileMenuToggle.addEventListener("click", () => {
+  if (mobileMenuToggle && navLinks) {
+    // Toggle mobile menu
+    mobileMenuToggle.addEventListener("click", (e) => {
+      e.stopPropagation()
       navLinks.classList.toggle("active")
+      mobileMenuToggle.classList.toggle("active")
+    })
+
+    // Close mobile menu when clicking outside
+    document.addEventListener("click", (e) => {
+      if (!navLinks.contains(e.target) && !mobileMenuToggle.contains(e.target)) {
+        navLinks.classList.remove("active")
+        mobileMenuToggle.classList.remove("active")
+      }
+    })
+
+    // Close mobile menu when clicking on nav links
+    const navLinksItems = navLinks.querySelectorAll(".nav-link")
+    navLinksItems.forEach((link) => {
+      link.addEventListener("click", () => {
+        navLinks.classList.remove("active")
+        mobileMenuToggle.classList.remove("active")
+      })
+    })
+
+    // Close mobile menu on window resize if screen becomes larger
+    window.addEventListener("resize", () => {
+      if (window.innerWidth > 768) {
+        navLinks.classList.remove("active")
+        mobileMenuToggle.classList.remove("active")
+      }
     })
   }
 
